@@ -38,5 +38,5 @@ def request_url(url: str) -> Optional[str]:
         response.raise_for_status()
         return response.text.strip()
     except requests.exceptions.RequestException as e:
-        logger.exception(f"Unable to send network request to {url}: {e}")
+        logger.exception(f"Unable to send network request to {url}")
         return None

@@ -115,7 +115,7 @@ class TestRun(QThread):
         try:
             _, config_connection = config_init()
             test_result = test_connection(config_connection)
-        except Exception as e:
-            logger.exception(f'Error during testing: {e}')
+        except Exception:
+            logger.exception(f'Error during testing')
             test_result = None
         self.signal.emit(test_result)

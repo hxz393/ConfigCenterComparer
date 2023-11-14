@@ -38,6 +38,6 @@ def config_path_get(config_dict: dict) -> Optional[str]:
     try:
         config_type = config_dict.get('config_center')
         return config_center_mapping.get(config_type, None)
-    except Exception as e:
-        logger.exception(f"Invalid config center type: {e}")
+    except Exception:
+        logger.exception(f"Invalid config center type")
         return None

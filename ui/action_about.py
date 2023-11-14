@@ -58,6 +58,6 @@ class ActionAbout:
         try:
             dialog = DialogAbout()
             dialog.exec_()
-        except Exception as e:
-            logger.exception(f"An error occurred while opening the about dialog: {e}")
+        except Exception:
+            logger.exception(f"An error occurred while opening the about dialog")
             self.label_status.setText(self.lang['label_status_error'])

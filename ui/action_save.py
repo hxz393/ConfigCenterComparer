@@ -60,8 +60,8 @@ class ActionSave:
                 if not self.table.isRowHidden(row):
                     data[row] = {self.table.horizontalHeaderItem(col).text(): self.table.item(row, col).text() for col in range(self.table.columnCount())}
             return data
-        except Exception as e:
-            logger.exception(f"Error extracting data from the table: {e}")
+        except Exception:
+            logger.exception(f"Error extracting data from the table")
             self.label_status.setText(self.lang['label_status_error'])
             return None
 
@@ -95,6 +95,6 @@ class ActionSave:
                 self.label_status.setText(self.lang['ui.action_save_5'])
             else:
                 message_show('Critical', self.lang['ui.action_save_7'])
-        except Exception as e:
-            logger.exception(f"Error saving file: {e}")
+        except Exception:
+            logger.exception(f"Error saving file")
             self.label_status.setText(self.lang['label_status_error'])

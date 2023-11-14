@@ -66,8 +66,8 @@ class ActionCopy:
             clipboard = QApplication.clipboard()
             clipboard.setText(clipboard_data)
             return clipboard_data
-        except Exception as e:
-            logger.exception(f"Error during copying: {e}")
+        except Exception:
+            logger.exception(f"Error during copying")
             self.label_status.setText(self.lang['label_status_error'])
 
     def _format_selected_data(self, selected_ranges: List[QTableWidgetSelectionRange]) -> str:

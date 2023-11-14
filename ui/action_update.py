@@ -108,7 +108,7 @@ class UpdateChecker(QThread):
         """
         try:
             latest_version = request_url(CHECK_UPDATE_URL)
-        except Exception as e:
-            logger.exception(f"An error occurred while checking for updates: {e}")
+        except Exception:
+            logger.exception(f"An error occurred while checking for updates")
             latest_version = None
         self.signal.emit(latest_version)

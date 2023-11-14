@@ -43,6 +43,6 @@ def write_dict_to_csv(target_path: Union[str, os.PathLike], data: List[Dict[str,
                 writer.writerow(row)
         return True
 
-    except Exception as e:
-        logger.exception(f"An error occurred while writing to the CSV file at '{target_path}': {e}")
+    except Exception:
+        logger.exception(f"An error occurred while writing to the CSV file at '{target_path}'")
         return None

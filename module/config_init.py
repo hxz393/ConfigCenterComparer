@@ -38,7 +38,7 @@ def config_init() -> Optional[Tuple[Dict[str, Any], Dict[str, Any]]]:
         config_connection = read_json_to_dict(os.path.normpath(config_path_get(config_main))) or DEFAULT_CONFIG_CONNECTION
 
         return config_main, config_connection
-    except Exception as e:
+    except Exception:
         # 记录错误信息并返回默认配置
-        logger.exception(f"An error occurred while initializing config: {e}")
+        logger.exception(f"An error occurred while initializing config")
         return DEFAULT_CONFIG_MAIN, DEFAULT_CONFIG_CONNECTION

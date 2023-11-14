@@ -68,8 +68,8 @@ class ActionBlock:
             self.filter_bar.filter_table()
             self.label_status.setText(self.lang['ui.action_block_3'])
 
-        except Exception as e:
-            logger.exception(f"An error occurred during block_items execution: {e}")
+        except Exception:
+            logger.exception(f"An error occurred during block_items execution")
             self.label_status.setText(self.lang['label_status_error'])
 
     def _get_index_key(self, item: QTableWidgetItem) -> str:

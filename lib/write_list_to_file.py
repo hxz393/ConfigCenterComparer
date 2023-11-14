@@ -37,6 +37,6 @@ def write_list_to_file(target_path: Union[str, Path], content: Union[List[Any], 
         with target_path.open('w', encoding="utf-8") as file:
             file.write("\n".join(str(element) for element in content))
         return True
-    except Exception as e:
-        logger.exception(f"An error occurred while writing to the file at '{target_path}': {e}")
+    except Exception:
+        logger.exception(f"An error occurred while writing to the file at '{target_path}'")
         return None

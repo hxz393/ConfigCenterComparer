@@ -53,6 +53,6 @@ def get_resource_path(relative_path: Union[str, os.PathLike]) -> Optional[str]:
         relative_path = os.path.normpath(relative_path)
         base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
         return os.path.join(base_path, relative_path)
-    except Exception as e:
-        logger.exception(f"An error occurred while retrieving resource path: {e}")
+    except Exception:
+        logger.exception(f"An error occurred while retrieving resource path")
         return None

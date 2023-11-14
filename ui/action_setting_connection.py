@@ -58,6 +58,6 @@ class ActionSettingConnection:
         try:
             dialog = DialogSettingsConnection(self.lang)
             dialog.exec_()
-        except Exception as e:
-            logger.exception(f"An error occurred while opening the settings dialog: {e}")
+        except Exception:
+            logger.exception(f"An error occurred while opening the settings dialog")
             self.label_status.setText(self.lang['label_status_error'])

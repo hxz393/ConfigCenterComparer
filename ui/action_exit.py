@@ -57,6 +57,6 @@ class ActionExit:
         """
         try:
             QCoreApplication.quit()
-        except Exception as e:
-            logger.exception(f"Exiting application error: {e}")
+        except Exception:
+            logger.exception(f"Exiting application error")
             self.label_status.setText(self.lang['label_status_error'])

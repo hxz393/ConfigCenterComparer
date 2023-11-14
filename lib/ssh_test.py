@@ -37,12 +37,6 @@ def ssh_test(ssh_config: dict) -> Optional[int]:
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(**ssh_config)
             return 0
-    except paramiko.AuthenticationException:
-        logger.error(f"SSH authentication failed.\n  ssh_config = {ssh_config}")
-        return 1
-    except paramiko.SSHException as e:
-        logger.error(f"SSH connection failed: {e}\n  ssh_config = {ssh_config}")
-        return 2
-    except Exception as e:
-        logger.exception(f"An unexpected error occurred: {e}\n  ssh_config = {ssh_config}")
+    except Exception:
+        logger.exception(f"An unexpected error occurred\n  ssh_config = {ssh_config}")
         return None

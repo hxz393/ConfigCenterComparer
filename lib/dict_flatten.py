@@ -44,6 +44,6 @@ def dict_flatten(content: Dict[Any, Any], parent_key: str = '', sep: str = '.') 
             else:
                 items[new_key] = value
         return items
-    except Exception as e:
-        logger.exception(f"An error occurred while flattening the dictionary: {e}")
+    except Exception:
+        logger.exception(f"An error occurred while flattening the dictionary.")
         return None

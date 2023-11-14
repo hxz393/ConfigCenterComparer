@@ -137,7 +137,7 @@ class StartWork(QThread):
 
             self.signal.emit(0)
 
-        except Exception as e:
+        except Exception:
             logger.exception(f'{e}')
             self.signal.emit(-1)
 

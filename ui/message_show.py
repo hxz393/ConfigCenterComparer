@@ -52,5 +52,5 @@ def message_show(message_type: str, text: str) -> None:
             raise ValueError("Invalid message type provided.")
 
         msg_box.exec_()
-    except Exception as e:
-        logger.exception(f"An error occurred while displaying the message box: {e}")
+    except Exception:
+        logger.exception(f"An error occurred while displaying the message box")

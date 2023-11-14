@@ -46,6 +46,6 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[tuple[
                 cursor.execute(query_sql)
                 result = cursor.fetchall()
                 return result
-    except Exception as e:
-        logger.exception(f"Unexpected error: {e}")
+    except Exception:
+        logger.exception(f"Unexpected error")
         return None

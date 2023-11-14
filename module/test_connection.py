@@ -46,6 +46,6 @@ def test_connection(config_connection: Dict[str, Dict[str, Any]]) -> Optional[Li
             test_result.append({'env_name': env_name, 'ssh_test_result': ssh_test_result, 'mysql_test_result': mysql_test_result})
 
         return test_result
-    except Exception as e:
-        logger.exception(f"Error during connection test: {e}")
+    except Exception:
+        logger.exception(f"Error during connection test")
         return None

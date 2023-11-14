@@ -44,6 +44,6 @@ def read_file_to_list(target_path: Union[str, os.PathLike]) -> Optional[List[str
     except UnicodeDecodeError:
         logger.error(f"Cannot decode file '{target_path}', please check whether it is in 'UTF-8' format.")
         return None
-    except Exception as e:
-        logger.exception(f"An error occurred while reading the file '{target_path}': {e}")
+    except Exception:
+        logger.exception(f"An error occurred while reading the file '{target_path}'from config.settings")
         return None

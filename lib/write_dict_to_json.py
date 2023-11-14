@@ -38,6 +38,6 @@ def write_dict_to_json(target_path: Union[str, Path], data: Dict[Any, Any]) -> O
         with target_path.open('w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False, indent=2)
         return True
-    except Exception as e:
-        logger.exception(f"An error occurred while writing to the JSON file at '{target_path}': {e}")
+    except Exception:
+        logger.exception(f"An error occurred while writing to the JSON file at '{target_path}'")
         return None

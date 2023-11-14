@@ -58,6 +58,6 @@ class ActionLogs:
         try:
             dialog = DialogLogs()
             dialog.exec_()
-        except Exception as e:
-            logger.exception(f"An error occurred while opening the logs dialog: {e}")
+        except Exception:
+            logger.exception(f"An error occurred while opening the logs dialog")
             self.label_status.setText(self.lang['label_status_error'])

@@ -37,5 +37,5 @@ def message_restart(text: str) -> None:
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
-    except Exception as e:
-        logger.exception(f"Error during configuration change restart process: {e}")
+    except Exception:
+        logger.exception(f"Error during configuration change restart process")

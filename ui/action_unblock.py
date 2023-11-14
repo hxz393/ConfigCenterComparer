@@ -73,6 +73,6 @@ class ActionUnblock:
             self.filter_bar.filter_table()
             self.label_status.setText(self.lang['ui.action_unblock_3'])
 
-        except Exception as e:
-            logger.exception(f"An error occurred during unblock_items execution: {e}")
+        except Exception:
+            logger.exception(f"An error occurred during unblock_items execution")
             self.label_status.setText(self.lang['label_status_error'])
