@@ -66,7 +66,7 @@ class ActionStart:
         self.action_start.setEnabled(False)
         self.label_status.setText(self.lang['ui.action_start_3'])
 
-        self.start_work = StartWork(self.table, self.filter_bar, self.label_status)
+        self.start_work = StartWork(self.table, self.filter_bar, self.label_status, self.lang)
         self.start_work.signal.connect(self.show_result_message)
         self.start_work.start()
 
@@ -102,7 +102,7 @@ class StartWork(QThread):
     """
     signal = pyqtSignal(int)
 
-    def __init__(self, table, filter_bar, label_status):
+    def __init__(self, table, filter_bar, label_status, lang):
         """
         初始化配置比较器线程。
 
@@ -112,12 +112,15 @@ class StartWork(QThread):
         :type filter_bar: FilterBar
         :param label_status: 状态标签，用于展示状态信息。
         :type label_status: QLabel
+        :param lang: 语言字典。
+        :type lang: Dict
         """
         super().__init__()
 
         self.table = table
         self.filter = filter_bar
         self.label_status = label_status
+        self.lang = lang
 
     def run(self) -> None:
         """
@@ -138,7 +141,7 @@ class StartWork(QThread):
             self.signal.emit(0)
 
         except Exception:
-            logger.exception(f'{e}')
+            logger.exception(f'Error occurred during execution')
             self.signal.emit(-1)
 
     def initialize(self):
@@ -179,10 +182,24 @@ class StartWork(QThread):
             return 3
 
         # 将最后得到的字典插入表格中
+        mapping_equal = {"0": self.lang['ui.action_start_8'], "1": self.lang['ui.action_start_9'], "2": self.lang['ui.action_start_10']}
+        mapping_filter = {"0": self.lang['ui.action_start_11'], "1": self.lang['ui.action_start_12']}
         for one_row in result_update_filter.values():
-            row = [one_row['app_id'], one_row['namespace_name'], one_row['key'],
-                   one_row.get('PRO_CONFIG'), one_row.get('PRE_CONFIG'), one_row.get('TEST_CONFIG'), one_row.get('DEV_CONFIG'),
-                   one_row['equal'], one_row['filter']]
+            row = [
+                [one_row.get('app_id'), one_row.get('app_id')],
+                [one_row.get('namespace_name'), one_row.get('namespace_name')],
+                [one_row.get('key'), one_row.get('key')],
+                [one_row.get('PRO_CONFIG'), one_row.get('PRO_CONFIG')],
+                [one_row.get('PRO_CONFIG_modified_time'), one_row.get('PRO_CONFIG_modified_time')],
+                [one_row.get('PRE_CONFIG'), one_row.get('PRE_CONFIG')],
+                [one_row.get('PRE_CONFIG_modified_time'), one_row.get('PRE_CONFIG_modified_time')],
+                [one_row.get('TEST_CONFIG'), one_row.get('TEST_CONFIG')],
+                [one_row.get('TEST_CONFIG_modified_time'), one_row.get('TEST_CONFIG_modified_time')],
+                [one_row.get('DEV_CONFIG'), one_row.get('DEV_CONFIG')],
+                [one_row.get('DEV_CONFIG_modified_time'), one_row.get('DEV_CONFIG_modified_time')],
+                [mapping_equal.get(one_row['equal'], self.lang['ui.action_start_13']), one_row['equal']],
+                [mapping_filter.get(one_row['filter'], self.lang['ui.action_start_13']), one_row['filter']],
+            ]
             self.table.add_row(row)
         return
 

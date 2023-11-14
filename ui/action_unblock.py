@@ -14,6 +14,7 @@
 
 import logging
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 
@@ -64,7 +65,8 @@ class ActionUnblock:
 
             for item in self.table.selectedItems():
                 row = item.row()
-                self.table.item(row, 8).setText("No")
+                self.table.item(row, 12).setData(Qt.UserRole, "0")
+                self.table.item(row, 12).setData(Qt.DisplayRole, self.lang['ui.action_start_11'])
                 index_key = f"{self.table.item(row, 0).text()}+{self.table.item(row, 1).text()}+{self.table.item(row, 2).text()}"
                 # 重生成过滤列表
                 filter_list = [f for f in filter_list if f != index_key]

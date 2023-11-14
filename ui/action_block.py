@@ -14,6 +14,7 @@
 
 import logging
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QTableWidgetItem
 
@@ -81,5 +82,6 @@ class ActionBlock:
         :return: 索引键。
         """
         row = item.row()
-        self.table.item(row, 8).setText("Yes")
+        self.table.item(row, 12).setData(Qt.UserRole, "1")
+        self.table.item(row, 12).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])
         return f"{self.table.item(row, 0).text()}+{self.table.item(row, 1).text()}+{self.table.item(row, 2).text()}"
