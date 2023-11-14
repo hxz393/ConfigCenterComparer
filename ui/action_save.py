@@ -76,7 +76,7 @@ class ActionSave:
         try:
             data = self.extract_table_data()
             if data is None:
-                message_show('Warning', self.lang['ui.action_save_8'])
+                message_show('Critical', self.lang['ui.action_save_8'])
                 return
 
             options = QFileDialog.Options()
@@ -94,7 +94,7 @@ class ActionSave:
             if save_result:
                 self.label_status.setText(self.lang['ui.action_save_5'])
             else:
-                message_show('Warning', self.lang['ui.action_save_7'])
+                message_show('Critical', self.lang['ui.action_save_7'])
         except Exception as e:
             logger.exception(f"Error saving file: {e}")
             self.label_status.setText(self.lang['label_status_error'])

@@ -24,6 +24,8 @@ from .mysql_query import mysql_query
 
 # 初始化日志记录器
 logger = logging.getLogger(__name__)
+# 调整 Paramiko 的日志记录级别
+logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 
 def mysql_query_with_ssh(ssh_config: Dict[str, Any], mysql_config: Dict[str, Any], query_sql: str) -> Optional[Any]:
@@ -68,5 +70,5 @@ def mysql_query_with_ssh(ssh_config: Dict[str, Any], mysql_config: Dict[str, Any
                 return mysql_query(mysql_config, query_sql)
 
     except Exception as e:
-        logger.exception(f"An error occurred: {e}\n{traceback.format_exc()}\n  ssh_config = {ssh_config}\n  mysql_config = {mysql_config}")
+        logger.exception(f"An error occurred: {e}\n  ssh_config = {ssh_config}\n  mysql_config = {mysql_config}")
         return None

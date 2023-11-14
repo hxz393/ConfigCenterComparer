@@ -39,7 +39,10 @@ def message_show(message_type: str, text: str) -> None:
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.setWindowTitle(message_type)
 
-        if message_type == 'Warning':
+        if message_type == 'Critical':
+            msg_box.setIcon(QMessageBox.Critical)
+            msg_box.setWindowIcon(QIcon(get_resource_path('media/icons8-error-26')))
+        elif message_type == 'Warning':
             msg_box.setIcon(QMessageBox.Warning)
             msg_box.setWindowIcon(QIcon(get_resource_path('media/icons8-do-not-disturb-26')))
         elif message_type == 'Information':
