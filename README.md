@@ -1,2 +1,2 @@
 # ConfigCenterComparer
-Apollo 配置对比工具
+配置中心对比工具

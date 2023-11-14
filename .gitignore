@@ -1,0 +1,13 @@
+/config/config.json
+/.idea
+__pycache__
+/build
+/dist
+/logs
+/config/config - 正确.json
+/config/config_apollo.json
+/config/config_filter.txt
+/config/config_main.json
+/config/config_nacos.json
+/ConfigCenterComparer.spec
+/ConfigComparerApollo.spec
