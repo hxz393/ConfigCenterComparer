@@ -19,10 +19,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QTableWidgetItem
 
 from ConfigCenterComparer import ConfigCenterComparer
+from config.settings import FILTER_PATH, COL_INFO
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
-from config.settings import FILTER_PATH, COL_INFO
 
 # 初始化日志记录器
 logger = logging.getLogger(__name__)

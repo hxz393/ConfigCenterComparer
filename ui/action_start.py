@@ -11,7 +11,7 @@
 """
 
 import logging
-from typing import Optional
+from typing import Optional, Dict
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
@@ -88,6 +88,8 @@ class ActionStart:
             message_show('Critical', self.lang['ui.action_start_5'])
         elif result == 3:
             message_show('Critical', self.lang['ui.action_start_6'])
+        elif result == 4:
+            message_show('Critical', self.lang['ui.action_start_14'])
         else:
             message_show('Critical', self.lang['ui.action_start_7'])
 
@@ -181,27 +183,44 @@ class StartWork(QThread):
         if not result_update_filter:
             return 3
 
-        # 将最后得到的字典插入表格中
-        mapping_equal = {"0": self.lang['ui.action_start_8'], "1": self.lang['ui.action_start_9'], "2": self.lang['ui.action_start_10']}
-        mapping_filter = {"0": self.lang['ui.action_start_11'], "1": self.lang['ui.action_start_12']}
-        for one_row in result_update_filter.values():
-            row = [
-                [one_row.get('app_id'), one_row.get('app_id')],
-                [one_row.get('namespace_name'), one_row.get('namespace_name')],
-                [one_row.get('key'), one_row.get('key')],
-                [one_row.get('PRO_CONFIG'), one_row.get('PRO_CONFIG')],
-                [one_row.get('PRO_CONFIG_modified_time'), one_row.get('PRO_CONFIG_modified_time')],
-                [one_row.get('PRE_CONFIG'), one_row.get('PRE_CONFIG')],
-                [one_row.get('PRE_CONFIG_modified_time'), one_row.get('PRE_CONFIG_modified_time')],
-                [one_row.get('TEST_CONFIG'), one_row.get('TEST_CONFIG')],
-                [one_row.get('TEST_CONFIG_modified_time'), one_row.get('TEST_CONFIG_modified_time')],
-                [one_row.get('DEV_CONFIG'), one_row.get('DEV_CONFIG')],
-                [one_row.get('DEV_CONFIG_modified_time'), one_row.get('DEV_CONFIG_modified_time')],
-                [mapping_equal.get(one_row['equal'], self.lang['ui.action_start_13']), one_row['equal']],
-                [mapping_filter.get(one_row['filter'], self.lang['ui.action_start_13']), one_row['filter']],
-            ]
-            self.table.add_row(row)
-        return
+        result_add_to_table = self.add_to_table(result_update_filter)
+        if result_add_to_table is None:
+            return 4
+
+    def add_to_table(self, result_update_filter: Dict[str, Dict[str, str]]) -> Optional[int]:
+        """
+        将最后得到的字典插入表格中。
+
+        :param result_update_filter: 最终数据字典。
+        :type result_update_filter: Dict[str, Dict[str, str]]
+        :return: 操作结果状态码。
+        :rtype: Optional[int]
+        """
+        try:
+            mapping_equal = {"0": self.lang['ui.action_start_8'], "1": self.lang['ui.action_start_9'], "2": self.lang['ui.action_start_10']}
+            mapping_filter = {"0": self.lang['ui.action_start_11'], "1": self.lang['ui.action_start_12']}
+
+            for one_row in result_update_filter.values():
+                row = [
+                    [one_row.get('app_id'), one_row.get('app_id')],
+                    [one_row.get('namespace_name'), one_row.get('namespace_name')],
+                    [one_row.get('key'), one_row.get('key')],
+                    [one_row.get('PRO_CONFIG'), one_row.get('PRO_CONFIG')],
+                    [one_row.get('PRO_CONFIG_modified_time'), one_row.get('PRO_CONFIG_modified_time')],
+                    [one_row.get('PRE_CONFIG'), one_row.get('PRE_CONFIG')],
+                    [one_row.get('PRE_CONFIG_modified_time'), one_row.get('PRE_CONFIG_modified_time')],
+                    [one_row.get('TEST_CONFIG'), one_row.get('TEST_CONFIG')],
+                    [one_row.get('TEST_CONFIG_modified_time'), one_row.get('TEST_CONFIG_modified_time')],
+                    [one_row.get('DEV_CONFIG'), one_row.get('DEV_CONFIG')],
+                    [one_row.get('DEV_CONFIG_modified_time'), one_row.get('DEV_CONFIG_modified_time')],
+                    [mapping_equal.get(one_row['equal'], self.lang['ui.action_start_13']), one_row['equal']],
+                    [mapping_filter.get(one_row['filter'], self.lang['ui.action_start_13']), one_row['filter']],
+                ]
+                self.table.add_row(row)
+            return 0
+        except Exception:
+            logger.exception(f'Error occurred during adding to table')
+            return None
 
     def finalize(self) -> None:
         """
