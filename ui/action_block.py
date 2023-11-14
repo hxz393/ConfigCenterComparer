@@ -22,7 +22,7 @@ from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
-from config.settings import FILTER_PATH
+from config.settings import FILTER_PATH, COL_INFO
 
 # 初始化日志记录器
 logger = logging.getLogger(__name__)
@@ -61,11 +61,11 @@ class ActionBlock:
         :return: 无返回值。
         """
         try:
-            filter_list = read_file_to_list(FILTER_PATH) or []
+            skip_list = read_file_to_list(FILTER_PATH) or []
 
             # 更新过滤器列表并写入文件
-            filter_list.extend([self._get_index_key(item) for item in self.table.selectedItems() if isinstance(item, QTableWidgetItem)])
-            write_list_to_file(FILTER_PATH, set(filter_list))
+            skip_list.extend([self._get_index_key(item) for item in self.table.selectedItems() if isinstance(item, QTableWidgetItem)])
+            write_list_to_file(FILTER_PATH, set(skip_list))
             self.filter_bar.filter_table()
             self.label_status.setText(self.lang['ui.action_block_3'])
 
@@ -75,13 +75,13 @@ class ActionBlock:
 
     def _get_index_key(self, item: QTableWidgetItem) -> str:
         """
-        获取表格项的索引键。
+        拼接行的索引键，同时设置忽略行。
 
         :param item: 表格项。
         :rtype: str
         :return: 索引键。
         """
         row = item.row()
-        self.table.item(row, 12).setData(Qt.UserRole, "1")
-        self.table.item(row, 12).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])
-        return f"{self.table.item(row, 0).text()}+{self.table.item(row, 1).text()}+{self.table.item(row, 2).text()}"
+        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "1")
+        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])
+        return f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}"
