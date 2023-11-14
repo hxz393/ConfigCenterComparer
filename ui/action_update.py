@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import QAction
 from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from lib.request_url import request_url
-from module.settings import VERSION_INFO, CHECK_UPDATE_URL
+from config.settings import VERSION_INFO, CHECK_UPDATE_URL
 from .message_show import message_show
 
 # 初始化日志记录器

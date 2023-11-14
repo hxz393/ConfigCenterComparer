@@ -21,7 +21,7 @@ from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
-from module.settings import FILTER_PATH
+from config.settings import FILTER_PATH
 
 # 初始化日志记录器
 logger = logging.getLogger(__name__)
