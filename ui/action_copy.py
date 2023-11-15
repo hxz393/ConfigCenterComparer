@@ -17,9 +17,7 @@ from PyQt5.QtWidgets import QAction, QApplication, QTableWidgetSelectionRange
 from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
-
 
 class ActionCopy:
     """
@@ -49,42 +47,36 @@ class ActionCopy:
         self.action_copy.triggered.connect(self.copy_selected)
 
     def copy_selected(self) -> Optional[str]:
-        """
-        复制所选内容到剪贴板。
-
-        此方法获取表格中用户所选的区域，并将其内容复制到剪贴板。
-
-        :rtype: Optional[str]
-        :return: 复制到剪贴板的文本内容，如果发生异常则返回 None。
-        """
         try:
             selected_ranges = self.table.selectedRanges()
             if not selected_ranges:
                 return None
 
             clipboard_data = self._format_selected_data(selected_ranges)
-            clipboard = QApplication.clipboard()
-            clipboard.setText(clipboard_data)
+            QApplication.clipboard().setText(clipboard_data)
             return clipboard_data
         except Exception:
-            logger.exception(f"Error during copying")
+            logger.exception("Error during copying")
             self.label_status.setText(self.lang['label_status_error'])
+            return None
 
     def _format_selected_data(self, selected_ranges: List[QTableWidgetSelectionRange]) -> str:
-        """
-        格式化所选区域的数据为字符串。
-
-        此方法负责将用户在表格中选中的数据区域转换为文本格式，以便复制到剪贴板。
-
-        :type selected_ranges: List[QTableWidgetSelectionRange]
-        :param selected_ranges: 选中的区域列表，每个区域是一个 QTableWidgetSelectionRange 对象。
-        :rtype: str
-        :return: 格式化后的字符串。
-        """
         rows_data = []
         for selected_range in selected_ranges:
-            for row in range(selected_range.topRow(), selected_range.bottomRow() + 1):
-                if not self.table.isRowHidden(row):
-                    row_data = [self.table.item(row, col).text() if self.table.item(row, col) else '' for col in range(selected_range.leftColumn(), selected_range.rightColumn() + 1)]
-                    rows_data.append('\t'.join(row_data))
+            rows_data.extend(self._extract_range_data(selected_range))
         return '\n'.join(rows_data).strip()
+
+    def _extract_range_data(self, selected_range: QTableWidgetSelectionRange) -> List[str]:
+        range_data = []
+        for row in range(selected_range.topRow(), selected_range.bottomRow() + 1):
+            if not self.table.isRowHidden(row):
+                range_data.append('\t'.join(self._extract_row_data(row, selected_range)))
+        return range_data
+
+    def _extract_row_data(self, row: int, selected_range: QTableWidgetSelectionRange) -> List[str]:
+        row_data = []
+        for col in range(selected_range.leftColumn(), selected_range.rightColumn() + 1):
+            if not self.table.isColumnHidden(col):
+                cell_text = self.table.item(row, col).text() if self.table.item(row, col) else ''
+                row_data.append(cell_text)
+        return row_data
