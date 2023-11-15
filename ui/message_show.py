@@ -1,11 +1,7 @@
 """
-这个 Python 文件包含了一个用于显示消息框的函数：`message_show`。
+这是一个用于显示不同类型消息框的辅助模块。
 
-`message_show` 函数的主要目的是根据提供的消息类型和文本，显示一个消息框。它接受两个参数：`message_type` 和 `text`。 `message_type` 参数决定了消息框的类型，可以是 'Warning' 或 'Information'。`text` 参数是消息框中显示的文本内容。
-
-在函数体中，首先创建一个 `QMessageBox` 对象，并根据 `message_type` 设置不同的图标和窗口图标。然后，函数显示消息框。如果过程中遇到任何异常，函数会捕获异常并使用 `logging` 模块记录错误信息，然后返回 `None`。
-
-这个模块主要用于在图形用户界面中显示警告或信息类的消息框，是用户交互的一个重要组成部分。
+本模块包含 `message_show` 函数，负责根据不同的消息类型显示相应的消息框。支持的消息类型包括 'Critical'、'Warning' 和 'Information'。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -19,19 +15,21 @@ from PyQt5.QtWidgets import QMessageBox
 
 from lib.get_resource_path import get_resource_path
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
 def message_show(message_type: str, text: str) -> None:
     """
-    显示消息框。
+    显示指定类型的消息框。
 
-    :param message_type: 消息类型，支持 'Warning' 或 'Information'。
+    根据提供的消息类型和文本内容，显示相应的消息框。支持的消息类型包括 'Critical'、'Warning' 和 'Information'。
+
+    :param message_type: 消息类型，支持 'Critical'、'Warning' 和 'Information'。
     :type message_type: str
-    :param text: 消息框中显示的文本。
+    :param text: 消息框中显示的文本内容。
     :type text: str
-    :return: 无返回值
+    :return: 无返回值。
+    :rtype: None
     """
     try:
         msg_box = QMessageBox()
