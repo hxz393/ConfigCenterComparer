@@ -56,7 +56,7 @@ class ActionSave:
         此方法弹出文件保存对话框，允许用户选择保存格式和位置，并执行保存操作。
         """
         try:
-            table_data = self.extract_table_data()
+            table_data = self._extract_table_data()
             if table_data is None:
                 message_show('Critical', self.lang['ui.action_save_8'])
                 return None
@@ -74,7 +74,7 @@ class ActionSave:
             logger.exception(f"Error saving file")
             self.label_status.setText(self.lang['label_status_error'])
 
-    def extract_table_data(self) -> Optional[Dict[int, Dict[str, str]]]:
+    def _extract_table_data(self) -> Optional[Dict[int, Dict[str, str]]]:
         """
         从表格中提取数据。
 
@@ -83,16 +83,12 @@ class ActionSave:
         :return: 表格数据的字典，键为行号，值为该行的数据字典；如果提取失败，则返回None。
         :rtype: Optional[Dict[int, Dict[str, str]]]
         """
-        try:
-            table_data = {
-                row: {
-                    self.table.horizontalHeaderItem(col).text(): self.table.item(row, col).text()
-                    for col in range(self.table.columnCount()) if not self.table.isColumnHidden(col)
-                }
-                for row in range(self.table.rowCount()) if not self.table.isRowHidden(row)
+        table_data = {
+            row: {
+                self.table.horizontalHeaderItem(col).text(): self.table.item(row, col).text()
+                for col in range(self.table.columnCount()) if not self.table.isColumnHidden(col)
             }
-            return table_data
-        except Exception:
-            logger.exception("Error extracting data from the table")
-            self.label_status.setText(self.lang['label_status_error'])
-            return None
+            for row in range(self.table.rowCount()) if not self.table.isRowHidden(row)
+        }
+        return table_data
+
