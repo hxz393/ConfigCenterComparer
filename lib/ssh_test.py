@@ -15,7 +15,6 @@ from typing import Optional
 
 import paramiko
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +25,7 @@ def ssh_test(ssh_config: dict) -> Optional[int]:
     :param ssh_config: 包含 SSH 连接所需配置的字典。最基本的例如：{'hostname': '127.0.0.1', 'port': '22', 'username': 'root', 'password': 'abc123'}
     :type ssh_config: dict
     :rtype: Optional[int]
-    :return: 连接成功返回 0，配置错误返回 -1，认证失败返回 1，SSH连接异常返回 2，其他异常返回 None。
+    :return: 连接成功返回 0，配置错误返回 -1，其他异常返回 None。
     """
     if not all(ssh_config.values()):
         logger.error(f"SSH configuration is incomplete or contains empty values.\n  ssh_config = {ssh_config}")
