@@ -46,13 +46,8 @@ def get_resource_path(relative_path: Union[str, os.PathLike]) -> Optional[str]:
     """
 
     try:
-        if not isinstance(relative_path, (str, os.PathLike)):
-            logger.error(f"The input relative path '{relative_path}' should be of type str or os.PathLike.")
-            return None
-
-        relative_path = os.path.normpath(relative_path)
         base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
-        return os.path.join(base_path, relative_path)
+        return os.path.join(base_path, os.path.normpath(relative_path))
     except Exception:
         logger.exception(f"An error occurred while retrieving resource path")
         return None
