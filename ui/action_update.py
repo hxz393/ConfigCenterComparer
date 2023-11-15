@@ -17,12 +17,11 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 
 from ConfigCenterComparer import ConfigCenterComparer
+from config.settings import VERSION_INFO, CHECK_UPDATE_URL
 from lib.get_resource_path import get_resource_path
 from lib.request_url import request_url
-from config.settings import VERSION_INFO, CHECK_UPDATE_URL
 from .message_show import message_show
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
@@ -76,12 +75,12 @@ class ActionUpdate:
         self.label_status.setText(self.lang['ui.action_update_9'])
         current_version = VERSION_INFO
 
-        if latest_version is None:
-            message_show('Warning', self.lang['ui.action_update_3'])
-        elif latest_version == current_version:
+        if latest_version == current_version:
             message_show('Information', f"{self.lang['ui.action_update_5']}\n\n{self.lang['ui.action_update_7']}{current_version}")
         elif latest_version != current_version:
             message_show('Information', f"{self.lang['ui.action_update_4']}\n\n{self.lang['ui.action_update_6']}{current_version}\n{self.lang['ui.action_update_7']}{latest_version}")
+        else:
+            message_show('Warning', self.lang['ui.action_update_3'])
 
 
 class UpdateChecker(QThread):
