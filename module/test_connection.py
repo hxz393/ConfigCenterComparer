@@ -14,12 +14,11 @@
 import logging
 from typing import Optional, Dict, Any, List
 
+from config.settings import SQL_TEST_MYSQL
 from lib.mysql_query import mysql_query
 from lib.mysql_query_with_ssh import mysql_query_with_ssh
 from lib.ssh_test import ssh_test
-from config.settings import SQL_TEST_MYSQL
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
