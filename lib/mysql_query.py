@@ -15,7 +15,6 @@ from typing import Any, Optional, Dict
 
 import pymysql
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
@@ -31,12 +30,8 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[tuple[
     :return: 查询结果的列表，如果发生异常则返回 None。
     """
     required_keys = ['host', 'port', 'user', 'password', 'db']
-    if not all(key in mysql_config for key in required_keys):
-        logger.error(f"MySQL configuration keys are missing.")
-        return None
-
-    if not all(mysql_config[key] for key in required_keys):
-        logger.error(f"MySQL configuration contains empty values.")
+    if not all(key in mysql_config and mysql_config[key] for key in required_keys):
+        logger.error(f"MySQL configuration keys are missing or contain empty values:\n  {mysql_config}")
         return None
 
     try:

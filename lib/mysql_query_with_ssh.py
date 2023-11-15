@@ -13,7 +13,6 @@
 """
 
 import logging
-import traceback
 from typing import Optional, Dict, Any
 
 import paramiko
@@ -22,7 +21,6 @@ from sshtunnel import open_tunnel
 
 from .mysql_query import mysql_query
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 # 调整 Paramiko 的日志记录级别
 logging.getLogger("paramiko").setLevel(logging.WARNING)
@@ -68,7 +66,6 @@ def mysql_query_with_ssh(ssh_config: Dict[str, Any], mysql_config: Dict[str, Any
                 mysql_config['port'] = tunnel.local_bind_port
 
                 return mysql_query(mysql_config, query_sql)
-
     except Exception:
         logger.exception(f"An error occurred\n  ssh_config = {ssh_config}\n  mysql_config = {mysql_config}")
         return None
