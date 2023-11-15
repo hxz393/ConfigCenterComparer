@@ -16,11 +16,10 @@ import logging
 import os
 from typing import Dict, Tuple, Any, Optional
 
-from .config_path_get import config_path_get
-from lib.read_json_to_dict import read_json_to_dict
 from config.settings import CONFIG_MAIN_PATH, DEFAULT_CONFIG_CONNECTION, DEFAULT_CONFIG_MAIN
+from lib.read_json_to_dict import read_json_to_dict
+from .config_path_get import config_path_get
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
