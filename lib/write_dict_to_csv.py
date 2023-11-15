@@ -15,7 +15,6 @@
 import csv
 import logging
 import os
-import traceback
 from typing import List, Dict, Union, Optional
 
 logger = logging.getLogger(__name__)
