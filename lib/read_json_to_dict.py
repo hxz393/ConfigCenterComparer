@@ -13,7 +13,6 @@
 """
 import json
 import logging
-import traceback
 import os
 from typing import Dict, Any, Union, Optional
 
@@ -29,13 +28,6 @@ def read_json_to_dict(target_path: Union[str, os.PathLike]) -> Optional[Dict[str
     :return: 成功时返回内容字典，如果遇到错误则返回None。
     :rtype: Optional[Dict[str, Any]]
     """
-    if not os.path.exists(target_path):
-        logger.error(f"The file '{target_path}' does not exist.")
-        return None
-    if not os.path.isfile(target_path):
-        logger.error(f"'{target_path}' is not a valid file.")
-        return None
-
     try:
         with open(target_path, 'r', encoding='utf-8') as file:
             return json.load(file)
