@@ -13,7 +13,6 @@
 """
 import json
 import logging
-import traceback
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
 
