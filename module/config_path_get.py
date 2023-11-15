@@ -13,7 +13,6 @@ from typing import Optional
 
 from config.settings import CONFIG_APOLLO_PATH, CONFIG_NACOS_PATH
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
@@ -26,10 +25,6 @@ def config_path_get(config_dict: dict) -> Optional[str]:
     :return: 如果找到对应的配置中心路径则返回该路径，否则返回 None。
     :rtype: Optional[str]
     """
-    if not isinstance(config_dict, dict):
-        logger.error("Provided configuration is not a dictionary.")
-        return None
-
     config_center_mapping = {
         'Apollo': CONFIG_APOLLO_PATH,
         'Nacos': CONFIG_NACOS_PATH
