@@ -12,7 +12,6 @@
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 import logging
-import traceback
 from pathlib import Path
 from typing import List, Any, Optional, Union, Set
 
