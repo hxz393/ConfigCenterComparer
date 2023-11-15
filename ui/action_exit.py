@@ -21,7 +21,6 @@ from PyQt5.QtWidgets import QAction
 from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
