@@ -12,7 +12,6 @@
 :copyright: Copyright 2023, hxz393。保留所有权利。
 """
 import logging
-import traceback
 import os
 from typing import List, Union, Optional
 
@@ -28,22 +27,9 @@ def read_file_to_list(target_path: Union[str, os.PathLike]) -> Optional[List[str
     :return: 成功时返回文本内容列表，如果遇到错误则返回None。
     :rtype: Optional[List[str]]
     """
-    if not os.path.exists(target_path):
-        logger.error(f"The file '{target_path}' does not exist.")
-        return None
-    if not os.path.isfile(target_path):
-        logger.error(f"'{target_path}' is not a valid file.")
-        return None
-
     try:
         with open(target_path, 'r', encoding="utf-8") as file:
             return [line.strip() for line in file]
-    except PermissionError:
-        logger.error(f"Cannot access file '{target_path}', permission denied.")
-        return None
-    except UnicodeDecodeError:
-        logger.error(f"Cannot decode file '{target_path}', please check whether it is in 'UTF-8' format.")
-        return None
     except Exception:
-        logger.exception(f"An error occurred while reading the file '{target_path}'from config.settings")
+        logger.exception(f"An error occurred while reading the file '{target_path}'")
         return None
