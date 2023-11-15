@@ -21,7 +21,6 @@ from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from .dialog_about import DialogAbout
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
