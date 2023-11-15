@@ -9,15 +9,14 @@
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 from config.settings import SQL_CONFIG_APOLLO_ID, SQL_CONFIG_NACOS, SQL_CONFIG_APOLLO_NAME
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
-def get_query_sql(config_main: Dict[str, Any]) -> Optional[str]:
+def start_query_get_sql(config_main: Dict[str, str]) -> Optional[str]:
     """
     根据配置中心类型和Apollo名称获取相应的SQL查询语句。
 
@@ -25,23 +24,19 @@ def get_query_sql(config_main: Dict[str, Any]) -> Optional[str]:
     返回相应的SQL查询语句。如果配置中心类型不支持或配置信息不完整，则返回None。
 
     :param config_main: 包含配置中心类型和Apollo名称的字典。
-    :type config_main: Dict[str, Any]
+    :type config_main: Dict[str, str]
     :rtype: Optional[str]
     :return: 相应的SQL查询语句，如果配置不正确则返回 None。
     """
-    config_center = config_main.get('config_center')
-    apollo_name = config_main.get('apollo_name')
-
     try:
-        if config_center == 'Nacos':
-            return SQL_CONFIG_NACOS
-        elif config_center == 'Apollo':
-            if apollo_name == 'AppId':
-                return SQL_CONFIG_APOLLO_ID
-            elif apollo_name == 'Name':
-                return SQL_CONFIG_APOLLO_NAME
-        else:
-            return None
+        sql_mapping = {
+            'Nacos': SQL_CONFIG_NACOS,
+            'Apollo': {
+                'AppId': SQL_CONFIG_APOLLO_ID,
+                'Name': SQL_CONFIG_APOLLO_NAME
+            }
+        }
+        return sql_mapping.get(config_main.get('config_center'), {}).get(config_main.get('apollo_name'))
     except Exception:
-        logger.exception("Error in get_query_sql function")
+        logger.exception("Unexpected error when getting SQL")
         return None
