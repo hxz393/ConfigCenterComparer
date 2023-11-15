@@ -22,7 +22,6 @@ from module.config_init import config_init
 from module.test_connection import test_connection
 from .message_show import message_show
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
@@ -80,7 +79,7 @@ class ActionTest:
             return
 
         message_info = ''.join(
-            f'{result["env_name"]} {self.lang["ui.action_test_4"]}'
+            f'<b>{result["env_name"]}</b> {self.lang["ui.action_test_4"]}<br>'
             f'<span style="color: {"green" if result["ssh_test_result"] == 0 else "red"};">'
             f'{"SSH " + self.lang["ui.action_test_5"] if result["ssh_test_result"] == 0 else "SSH " + self.lang["ui.action_test_6"]}</span> '
             f'<span style="color: {"green" if result["mysql_test_result"] else "red"};">'
