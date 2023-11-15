@@ -28,15 +28,14 @@ def request_url(url: str) -> Optional[str]:
 
     :rtype: Optional[str]
     :return: 如果请求成功，返回 URL 的响应内容；否则返回 None
-    :raise: 不抛出任何异常，而是用日志记录所有异常
     """
     session = requests.Session()
     session.trust_env = False
 
     try:
-        response = session.get(url, verify=False, timeout=5)
+        response = session.get(url, verify=False, timeout=15)
         response.raise_for_status()
         return response.text.strip()
-    except requests.exceptions.RequestException as e:
+    except Exception:
         logger.exception(f"Unable to send network request to {url}")
         return None
