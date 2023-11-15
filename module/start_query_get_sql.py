@@ -28,15 +28,19 @@ def start_query_get_sql(config_main: Dict[str, str]) -> Optional[str]:
     :rtype: Optional[str]
     :return: 相应的SQL查询语句，如果配置不正确则返回 None。
     """
+    config_center = config_main.get('config_center')
+    apollo_name = config_main.get('apollo_name')
+
     try:
-        sql_mapping = {
-            'Nacos': SQL_CONFIG_NACOS,
-            'Apollo': {
-                'AppId': SQL_CONFIG_APOLLO_ID,
-                'Name': SQL_CONFIG_APOLLO_NAME
-            }
-        }
-        return sql_mapping.get(config_main.get('config_center'), {}).get(config_main.get('apollo_name'))
+        if config_center == 'Nacos':
+            return SQL_CONFIG_NACOS
+        elif config_center == 'Apollo':
+            if apollo_name == 'AppId':
+                return SQL_CONFIG_APOLLO_ID
+            elif apollo_name == 'Name':
+                return SQL_CONFIG_APOLLO_NAME
+        else:
+            return None
     except Exception:
         logger.exception("Unexpected error when getting SQL")
         return None
