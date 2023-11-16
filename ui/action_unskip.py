@@ -15,7 +15,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QTableWidgetItem
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import FILTER_PATH, COL_INFO
+from config.settings import CONFIG_SKIP_PATH, COL_INFO
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
@@ -63,12 +63,12 @@ class ActionUnskip:
         :rtype: None
         """
         try:
-            skip_list = read_file_to_list(FILTER_PATH) or []
+            skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
 
             # 重生成过滤列表
             selected_keys = [self._get_index_key(item) for item in self.table.selectedItems()]
             skip_list = [f for f in skip_list if f not in selected_keys]
-            write_list_to_file(FILTER_PATH, set(skip_list))
+            write_list_to_file(CONFIG_SKIP_PATH, set(skip_list))
 
             self.filter_bar.filter_table()
             self.label_status.setText(self.lang['ui.action_unskip_3'])

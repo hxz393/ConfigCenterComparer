@@ -35,6 +35,7 @@ def start_query(config_connection: Dict[str, Any], config_main: Dict[str, Any]) 
     :rtype: Optional[List[Any]]
     """
     try:
+        # 获取数据库查询语句
         query_sql = get_query_sql(config_main)
         if not query_sql:
             logger.error("Error getting query SQL")
@@ -47,7 +48,7 @@ def start_query(config_connection: Dict[str, Any], config_main: Dict[str, Any]) 
             return None
 
         # 查询各配置环境的值，得到一致性信息，更新到结果字典
-        update_config_consistency_status(formatted_results)
+        update_config_consistency_status(formatted_results, query_statuses)
 
         # 通过对比过滤列表，得到是否过滤信息，更新到结果字典
         update_config_skip_status(formatted_results)

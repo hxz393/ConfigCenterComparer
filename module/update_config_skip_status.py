@@ -13,7 +13,7 @@
 import logging
 from typing import Dict
 
-from config import FILTER_PATH
+from config import CONFIG_SKIP_PATH
 from lib.read_file_to_list import read_file_to_list
 
 logger = logging.getLogger(__name__)
@@ -30,10 +30,10 @@ def update_config_skip_status(results: Dict[str, Dict[str, str]]) -> None:
     """
     try:
         # 读取过滤列表
-        skip_list = read_file_to_list(FILTER_PATH) or []
+        skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
 
         # 更新结果字典
         for index_key in results:
-            results[index_key]['filter'] = '1' if index_key in skip_list else '0'
+            results[index_key]['skip_status'] = '1' if index_key in skip_list else '0'
     except Exception:
-        logger.exception("Error occurred while applying filter to results")
+        logger.exception("Error occurred while applying skip status to results")
