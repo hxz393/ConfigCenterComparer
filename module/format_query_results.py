@@ -19,7 +19,7 @@ from .merge_formatted_results import merge_formatted_results
 logger = logging.getLogger(__name__)
 
 
-def format_query_results(query_results: Tuple[Tuple[str, Any, ...]], env_name: str, name_config: Dict[str, Any], formatted_results: Dict[str, Dict[str, Any]]) -> None:
+def format_query_results(query_results: Tuple[Tuple[str, Any]], env_name: str, name_config: Dict[str, Any], formatted_results: Dict[str, Dict[str, Any]]) -> None:
     """
     根据配置中心类型和环境名称，处理多个查询结果并将其合并到已有的结果字典中。
 
