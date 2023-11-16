@@ -19,7 +19,7 @@ from lib.mysql_query_with_ssh import mysql_query_with_ssh
 logger = logging.getLogger(__name__)
 
 
-def get_query_result(db_config: Dict[str, Any], query_sql: str) -> Optional[Tuple[Tuple[Any, ...], ...]]:
+def get_query_result(db_config: Dict[str, Any], query_sql: str) -> Optional[Tuple[Tuple[str, Any, ...], ...]]:
     """
     根据数据库配置执行 SQL 查询。
 
