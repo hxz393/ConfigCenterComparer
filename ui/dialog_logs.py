@@ -248,8 +248,8 @@ class DialogLogs(QDialog):
         """
         if selected_level is None:
             return True
-        selected_index = LEVELS.index(selected_level)
-        for level in LEVELS[selected_index:]:
+        selected_index = DialogLogs.LEVELS.index(selected_level)
+        for level in DialogLogs.LEVELS[selected_index:]:
             if f' - {level} - ' in log_entry:
                 return True
         return False
