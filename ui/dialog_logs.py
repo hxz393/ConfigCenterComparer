@@ -8,19 +8,19 @@
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 
+import logging
 import re
 import webbrowser
 from typing import Optional
 
-from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QPushButton, QHBoxLayout, QComboBox, QLabel, QWidget
-from PyQt5.QtGui import QColor, QTextCharFormat, QTextCursor, QIcon
 from PyQt5.QtCore import Qt
-import logging
+from PyQt5.QtGui import QColor, QTextCharFormat, QTextCursor, QIcon
+from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QPushButton, QHBoxLayout, QComboBox, QLabel, QWidget
 
 from ConfigCenterComparer import ConfigCenterComparer
+from config.settings import GITHUB_URL, LOG_PATH
 from lib.get_resource_path import get_resource_path
 from lib.write_list_to_file import write_list_to_file
-from config.settings import GITHUB_URL, LOG_PATH
 
 logger = logging.getLogger(__name__)
 
