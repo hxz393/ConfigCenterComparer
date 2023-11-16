@@ -1,9 +1,7 @@
 """
-这是一个用于配置中心比较和管理的Python模块。
+这是一个用于管理配置中心比较过程的Python模块。
 
-此模块包含用于启动、运行和管理配置比较过程的类，其中包括`ActionStart`和`StartWork`。这些类协同工作，用于处理配置数据的获取、比较和展示。
-
-本模块的主要目的是为用户提供一个界面来对比和管理不同环境中的配置数据。
+此模块包含了多个类，包括`ActionStart`、`StartWork`和`TableResultsManager`。这些类协同工作，提供界面交互、后台处理以及结果展示的功能。它们是配置中心比较器的核心组成部分。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -11,21 +9,19 @@
 """
 
 import logging
-from typing import Optional, Dict
+from typing import Dict, List, Tuple
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 
 from ConfigCenterComparer import ConfigCenterComparer
+from config.settings import COL_INFO
 from lib.get_resource_path import get_resource_path
 from module.config_init import config_init
 from module.start_query import start_query
-from module.start_update_duplicate import start_update_duplicate
-from module.start_update_filter import start_update_filter
 from .message_show import message_show
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
@@ -59,39 +55,37 @@ class ActionStart:
 
     def start(self) -> None:
         """
-        启动配置比较的过程。
+        启动配置比较过程。
 
-        此方法触发配置比较的流程，并在界面上展示相关状态信息。
+        此方法会禁用启动按钮，更新状态栏信息，并创建并启动 `StartWork` 线程以开始配置比较过程。
+
+        通过 PyQt 的信号-槽机制，此方法还会处理线程完成时的回调，以更新用户界面和显示结果信息。
         """
         self.action_start.setEnabled(False)
         self.label_status.setText(self.lang['ui.action_start_3'])
 
-        self.start_work = StartWork(self.table, self.filter_bar, self.label_status, self.lang)
+        self.start_work = StartWork(self.table, self.filter_bar, self.lang)
         self.start_work.signal.connect(self.show_result_message)
         self.start_work.start()
 
     def show_result_message(self, result: int):
         """
-        显示配置比较的结果信息。
+        显示配置比较结果的消息。
+
+        此方法根据配置比较的结果显示不同的消息提示。
 
         :param result: 配置比较的结果代码。
         :type result: int
         """
         self.action_start.setEnabled(True)
-        if result == 0:
-            return
-
-        self.label_status.setText(self.lang['label_status_error'])
-        if result == 1:
-            message_show('Warning', self.lang['ui.action_start_4'])
-        elif result == 2:
-            message_show('Critical', self.lang['ui.action_start_5'])
-        elif result == 3:
-            message_show('Critical', self.lang['ui.action_start_6'])
-        elif result == 4:
-            message_show('Critical', self.lang['ui.action_start_14'])
-        else:
-            message_show('Critical', self.lang['ui.action_start_7'])
+        self.label_status.setText(self.lang['label_status_error'] if result else '')
+        message = {
+            1: ('Warning', self.lang['ui.action_start_4']),
+            2: ('Warning', self.lang['ui.action_start_5']),
+            -1: ('Critical', self.lang['ui.action_start_7'])
+        }.get(result, None)
+        if message:
+            message_show(*message)
 
 
 class StartWork(QThread):
@@ -104,7 +98,7 @@ class StartWork(QThread):
     """
     signal = pyqtSignal(int)
 
-    def __init__(self, table, filter_bar, label_status, lang):
+    def __init__(self, table, filter_bar, lang):
         """
         初始化配置比较器线程。
 
@@ -112,45 +106,37 @@ class StartWork(QThread):
         :type table: QTableWidget
         :param filter_bar: 过滤栏对象，用于设置过滤条件。
         :type filter_bar: FilterBar
-        :param label_status: 状态标签，用于展示状态信息。
-        :type label_status: QLabel
         :param lang: 语言字典。
         :type lang: Dict
         """
         super().__init__()
-
         self.table = table
         self.filter = filter_bar
-        self.label_status = label_status
-        self.lang = lang
+        self.table_results_manager = TableResultsManager(table, lang)
+        self.config_main, self.config_connection = None, None
 
     def run(self) -> None:
         """
-        执行配置比较的主要逻辑。
+        执行配置比较器线程的主要工作流程。
 
-        此方法在线程启动时被调用。它处理配置数据的获取、比较，并将结果通过信号发送。
+        此方法包括初始化配置、执行查询、处理查询结果以及处理异常情况等步骤。它在后台执行，不会阻塞主界面的响应。
+        线程完成或出现异常时，会发出信号通知主线程。
         """
         try:
             self.initialize()
-
-            result = self.process_data()
-            if result is not None:
-                self.signal.emit(result)
+            if not self.perform_query():
                 return
-
             self.finalize()
-
             self.signal.emit(0)
-
         except Exception:
-            logger.exception(f'Error occurred during execution')
+            logger.exception('Error occurred during execution')
             self.signal.emit(-1)
 
     def initialize(self):
         """
-        初始化所需配置。
+        初始化配置比较器线程。
 
-        此方法负责清空表格数据，禁用排序，并加载配置信息。
+        此方法会清空表格数据，禁用表格排序，并加载配置信息。它是配置比较过程开始前的准备步骤。
         """
         # 清空表格数据
         self.table.clear()
@@ -159,74 +145,31 @@ class StartWork(QThread):
         # 加载配置信息
         self.config_main, self.config_connection = config_init()
 
-    def process_data(self) -> Optional[int]:
+    def perform_query(self) -> bool:
         """
-        处理并比较配置数据。
+        执行配置查询操作。
 
-        此方法执行数据查询、比较和处理。根据比较结果返回不同的状态码。
-
-        :return: 操作结果状态码。
-        :rtype: Optional[int]
+        此方法会调用 `start_query` 函数，执行配置查询。如果查询成功，将结果添加到表格中；如果查询失败，发送相应的信号。
+        :return: 查询是否成功。
+        :rtype: bool
         """
-        # 开始查询数据库
-        result_dict = start_query(self.config_connection, self.config_main)
-        if not result_dict:
-            return 1
+        query_results = start_query(self.config_connection, self.config_main)
+        if not query_results:
+            self.signal.emit(1)
+            return False
 
-        # 根据各配置环境的值，得到一致性信息，加入到配置字典
-        result_update_duplicate = start_update_duplicate(result_dict)
-        if not result_update_duplicate:
-            return 2
+        add_to_table_result = self.table_results_manager.add_results_to_table(query_results)
+        if not add_to_table_result:
+            self.signal.emit(2)
+            return False
 
-        # 通过对比过滤列表，得到是否过滤信息，加入到配置字典
-        result_update_filter = start_update_filter(result_update_duplicate)
-        if not result_update_filter:
-            return 3
-
-        result_add_to_table = self.add_to_table(result_update_filter)
-        if result_add_to_table is None:
-            return 4
-
-    def add_to_table(self, result_update_filter: Dict[str, Dict[str, str]]) -> Optional[int]:
-        """
-        将最后得到的字典插入表格中。
-
-        :param result_update_filter: 最终数据字典。
-        :type result_update_filter: Dict[str, Dict[str, str]]
-        :return: 操作结果状态码。
-        :rtype: Optional[int]
-        """
-        try:
-            mapping_equal = {"0": self.lang['ui.action_start_8'], "1": self.lang['ui.action_start_9'], "2": self.lang['ui.action_start_10']}
-            mapping_filter = {"0": self.lang['ui.action_start_11'], "1": self.lang['ui.action_start_12']}
-
-            for one_row in result_update_filter.values():
-                row = [
-                    [one_row.get('app_id'), one_row.get('app_id')],
-                    [one_row.get('namespace_name'), one_row.get('namespace_name')],
-                    [one_row.get('key'), one_row.get('key')],
-                    [one_row.get('PRO_CONFIG'), one_row.get('PRO_CONFIG')],
-                    [one_row.get('PRO_CONFIG_modified_time'), one_row.get('PRO_CONFIG_modified_time')],
-                    [one_row.get('PRE_CONFIG'), one_row.get('PRE_CONFIG')],
-                    [one_row.get('PRE_CONFIG_modified_time'), one_row.get('PRE_CONFIG_modified_time')],
-                    [one_row.get('TEST_CONFIG'), one_row.get('TEST_CONFIG')],
-                    [one_row.get('TEST_CONFIG_modified_time'), one_row.get('TEST_CONFIG_modified_time')],
-                    [one_row.get('DEV_CONFIG'), one_row.get('DEV_CONFIG')],
-                    [one_row.get('DEV_CONFIG_modified_time'), one_row.get('DEV_CONFIG_modified_time')],
-                    [mapping_equal.get(one_row['equal'], self.lang['ui.action_start_13']), one_row['equal']],
-                    [mapping_filter.get(one_row['filter'], self.lang['ui.action_start_13']), one_row['filter']],
-                ]
-                self.table.add_row(row)
-            return 0
-        except Exception:
-            logger.exception(f'Error occurred during adding to table')
-            return None
+        return True
 
     def finalize(self) -> None:
         """
-        完成配置比较后的收尾工作。
+        完成配置比较器线程的收尾工作。
 
-        此方法执行比较后的清理工作，如启用表格排序、更新过滤器等。
+        此方法在配置比较完成后执行，包括启动表格排序、更新过滤器等操作。它是配置比较过程结束后的整理步骤。
         """
         # 启动排序
         self.table.setSortingEnabled(True)
@@ -236,3 +179,116 @@ class StartWork(QThread):
         self.filter.filter_options_add()
         # 运行过滤器
         self.filter.filter_table()
+
+
+class TableResultsManager:
+    """
+    用于管理和展示表格结果的类。
+
+    此类提供了添加查询结果到表格、准备表格行数据、以及根据查询状态更新表格列显示或隐藏的功能。
+
+    :param table: 用于显示结果的表格对象。
+    :type table: Table
+    :param lang: 用于国际化的语言字典。
+    :type lang: Dict[str, str]
+    """
+
+    def __init__(self, table, lang):
+        """
+        初始化类。
+
+        :param table: 表格对象，用于显示比较结果。
+        :type table: QTableWidget
+        :param lang: 语言字典。
+        :type lang: Dict
+        """
+        self.table = table
+        self.lang = lang
+
+    def add_results_to_table(self, query_results: List) -> bool:
+        """
+        将查询结果添加到表格中。
+
+        此方法处理格式化结果和查询状态，然后更新表格内容。
+
+        :param query_results: 包含格式化结果和查询状态的元组。
+        :type query_results: Tuple[Dict, Dict]
+        :return: 是否成功添加到表格。
+        :rtype: bool
+        """
+        try:
+            formatted_results, query_statuses = query_results
+            table_rows = self.prepare_table_rows(formatted_results)
+            self.add_rows_to_table(table_rows)
+            self.update_table_column_hide(query_statuses)
+            return True
+        except Exception:
+            logger.exception('Error occurred during adding results to table')
+            return False
+
+    def prepare_table_rows(self, formatted_results: Dict) -> List[List]:
+        """
+        准备要添加到表格的行数据。
+
+        根据提供的格式化结果，此方法生成表格所需的行数据列表。
+
+        :param formatted_results: 格式化后的查询结果。
+        :type formatted_results: Dict
+        :return: 表格行数据列表。
+        :rtype: List[List]
+        """
+        # 定义状态映射
+        consistency_status_mapping = {
+            "0": self.lang['ui.action_start_8'],
+            "1": self.lang['ui.action_start_9'],
+            "2": self.lang['ui.action_start_10']
+        }
+        skip_status_mapping = {
+            "0": self.lang['ui.action_start_11'],
+            "1": self.lang['ui.action_start_12']
+        }
+
+        # 基本键列表
+        basic_keys = [
+            'app_id', 'namespace_name', 'key',
+            'PRO_CONFIG', 'PRO_CONFIG_modified_time',
+            'PRE_CONFIG', 'PRE_CONFIG_modified_time',
+            'TEST_CONFIG', 'TEST_CONFIG_modified_time',
+            'DEV_CONFIG', 'DEV_CONFIG_modified_time'
+        ]
+        return [
+            [
+                [result.get(key, 'None'), result.get(key, 'None')]
+                for key in basic_keys
+            ] + [
+                [consistency_status_mapping.get(result['consistency_status'], self.lang['ui.action_start_13']), result['consistency_status']],
+                [skip_status_mapping.get(result['skip_status'], self.lang['ui.action_start_13']), result['skip_status']],
+            ]
+            for result in formatted_results.values()
+        ]
+
+    def add_rows_to_table(self, table_rows: List[List]):
+        """
+        将行数据添加到表格中。
+
+        遍历提供的行数据列表，将每行数据添加到表格中。
+
+        :param table_rows: 表格行数据列表。
+        :type table_rows: List[List]
+        """
+        for row in table_rows:
+            self.table.add_row(row)
+
+    def update_table_column_hide(self, query_statuses: Dict):
+        """
+        根据查询状态更新表格列的显示或隐藏。
+
+        根据查询状态字典，决定每列的显示或隐藏。
+
+        :param query_statuses: 包含列名称和状态的字典。
+        :type query_statuses: Dict
+        """
+        column_name_mapping = {'PRO_CONFIG': 'pro_value', 'PRE_CONFIG': 'pre_value', 'TEST_CONFIG': 'test_value', 'DEV_CONFIG': 'dev_value'}
+        for k, v in query_statuses.items():
+            action = self.table.showColumn if v else self.table.hideColumn
+            action(COL_INFO[column_name_mapping[k]]['col'])
