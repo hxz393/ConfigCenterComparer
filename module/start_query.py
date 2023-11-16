@@ -1,8 +1,9 @@
 """
-这是一个用于执行数据库查询并处理结果的模块。
+这是一个用于数据库查询和配置管理的Python模块。
 
-本模块提供了 `start_query` 函数，用于在多个环境中执行 SQL 查询，并根据指定配置处理查询结果。
-它支持通过 SSH 连接到数据库，并能够对查询结果进行格式化处理。
+此模块主要包含 `start_query` 函数，用于连接数据库并根据配置执行查询。它会调用多个辅助函数来处理查询结果，包括获取查询SQL、执行查询、更新配置一致性状态和跳过状态。
+
+本模块的目的是提供一个统一的入口点，用于执行配置中心的数据查询并处理结果。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -10,58 +11,48 @@
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
-from lib.mysql_query import mysql_query
-from lib.mysql_query_with_ssh import mysql_query_with_ssh
-from .start_query_get_sql import start_query_get_sql
-from .start_query_result_format import start_query_result_format
+from .execute_queries import execute_queries
+from .get_query_sql import get_query_sql
+from .update_config_consistency_status import update_config_consistency_status
+from .update_config_skip_status import update_config_skip_status
 
-# 初始化日志记录器
 logger = logging.getLogger(__name__)
 
 
-def start_query(config_connection: Dict[str, Any], config_main: Dict[str, Any]) -> Optional[Dict[str, Dict[str, Any]]]:
+def start_query(config_connection: Dict[str, Any], config_main: Dict[str, Any]) -> Optional[List[Any]]:
     """
-    在多个环境中执行 SQL 查询并处理结果。
+    启动查询过程，使用给定的配置连接数据库并执行查询。
 
-    此函数接受数据库连接配置和主配置，针对每个环境执行 SQL 查询并格式化结果。
-    支持通过 SSH 连接到数据库。
+    此函数首先通过 `get_query_sql` 获取查询SQL，然后使用 `execute_queries` 执行查询。查询结果通过 `update_config_consistency_status` 和 `update_config_skip_status` 函数处理，最终返回一个包含查询结果和查询状态的列表。
 
-    :param config_connection: 包含每个环境数据库连接配置的字典。
+    :param config_connection: 数据库连接配置字典。
     :type config_connection: Dict[str, Any]
-    :param config_main: 包含主配置的字典。
+    :param config_main: 主配置字典。
     :type config_main: Dict[str, Any]
-    :return: 各环境查询结果的字典。
-    :rtype: Optional[Dict[str, Dict[str, Any]]]
+    :return: 包含查询结果和查询状态的列表，如果发生异常则返回 None。
+    :rtype: Optional[List[Any]]
     """
     try:
-        result_dict = {}
-
-        query_sql = start_query_get_sql(config_main)
+        query_sql = get_query_sql(config_main)
         if not query_sql:
+            logger.error("Error getting query SQL")
             return None
 
-        for env_name, config in config_connection.items():
-            if not config.get('mysql_on'):
-                continue
+        # 获取数据库查询结果
+        formatted_results, query_statuses = execute_queries(config_connection, config_main, query_sql)
+        if not formatted_results:
+            logger.error("Error in querying databases")
+            return None
 
-            if config.get('ssh_on'):
-                query_result = mysql_query_with_ssh(ssh_config=config['ssh'], mysql_config=config['mysql'], query_sql=query_sql)
-            else:
-                query_result = mysql_query(mysql_config=config['mysql'], query_sql=query_sql)
-            if not query_result:
-                logger.warning(f"No results obtained from database query for environment: {env_name}")
-                continue
+        # 查询各配置环境的值，得到一致性信息，更新到结果字典
+        update_config_consistency_status(formatted_results)
 
-            for query_result_one in query_result:
-                result_dict = start_query_result_format(query_result_one, env_name, config_main, result_dict)
-                if not result_dict:
-                    logger.error(f"Error formatting query result for environment: {env_name}, Data: {query_result_one}")
-                    continue
+        # 通过对比过滤列表，得到是否过滤信息，更新到结果字典
+        update_config_skip_status(formatted_results)
 
-        return result_dict
-
+        return [formatted_results, query_statuses]
     except Exception:
-        logger.exception(f'Error occurred during execution')
+        logger.exception('Error occurred during execution')
         return None
