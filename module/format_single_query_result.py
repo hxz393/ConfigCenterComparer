@@ -20,7 +20,7 @@ from .modify_name import modify_name
 logger = logging.getLogger(__name__)
 
 
-def format_single_query_result(single_query_result: Tuple[str, str, Any], env_name: str, name_config: Dict[str, Any]) -> Optional[Dict[str, Dict[str, Any]]]:
+def format_single_query_result(single_query_result: Tuple[str, Any], env_name: str, name_config: Dict[str, Any]) -> Optional[Dict[str, Dict[str, Any]]]:
     """
     根据配置中心类型格式化单个查询结果。
 
