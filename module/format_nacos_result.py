@@ -55,5 +55,5 @@ def format_nacos_result(app_id: str, namespace_name: str, rest: Tuple[str, Any],
             for key, value in items.items()
         }
     except yaml.YAMLError as e:
-        logger.exception(f"Error parsing YAML content: {e}")
+        logger.exception(f"Error parsing YAML content: {e}  name = {app_id}\n")
         return None
