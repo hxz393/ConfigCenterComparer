@@ -68,8 +68,7 @@ class DialogLogs(QDialog):
         self.label = QLabel(self.lang['ui.dialog_logs_2'], self)
         self.combo_box = QComboBox(self)
         self.combo_box.addItem(self.lang['ui.dialog_logs_3'], None)
-        for i in DialogLogs.LEVELS:
-            self.combo_box.addItem(i, i)
+        self.combo_box.addItems(DialogLogs.LEVELS)
         self.combo_box.currentIndexChanged.connect(self.filter_logs)
 
         # 创建按钮
@@ -77,6 +76,8 @@ class DialogLogs(QDialog):
         feedback_button.clicked.connect(self.open_github)
         clear_button = QPushButton(self.lang['ui.dialog_logs_5'], self)
         clear_button.clicked.connect(self.clear_logs)
+        close_button = QPushButton(self.lang['ui.dialog_logs_6'], self)
+        close_button.clicked.connect(self.close)
 
         # 布局设置
         top_layout = QHBoxLayout()
@@ -85,9 +86,10 @@ class DialogLogs(QDialog):
         top_layout.addStretch()
 
         button_layout = QHBoxLayout()
-        button_layout.addStretch()
         button_layout.addWidget(feedback_button)
         button_layout.addWidget(clear_button)
+        button_layout.addStretch()
+        button_layout.addWidget(close_button)
 
         layout = QVBoxLayout(self)
         layout.addLayout(top_layout)
