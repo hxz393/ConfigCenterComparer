@@ -14,7 +14,7 @@ import logging
 from typing import Dict
 
 from config import FILTER_PATH
-from lib import read_file_to_list
+from lib.read_file_to_list import read_file_to_list
 
 logger = logging.getLogger(__name__)
 
