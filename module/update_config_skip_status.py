@@ -13,7 +13,7 @@
 import logging
 from typing import Dict
 
-from config import CONFIG_SKIP_PATH
+from config.settings import CONFIG_SKIP_PATH
 from lib.read_file_to_list import read_file_to_list
 
 logger = logging.getLogger(__name__)

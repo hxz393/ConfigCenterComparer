@@ -10,7 +10,7 @@
 
 from typing import Dict, Optional
 
-from config import SQL_CONFIG_NACOS, SQL_CONFIG_APOLLO_ID, SQL_CONFIG_APOLLO_NAME
+from config.settings import SQL_CONFIG_NACOS, SQL_CONFIG_APOLLO_ID, SQL_CONFIG_APOLLO_NAME
 import logging
 
 logger = logging.getLogger(__name__)
