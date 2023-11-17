@@ -28,7 +28,7 @@ def ssh_test(ssh_config: dict) -> Optional[int]:
     :return: 连接成功返回 0，配置错误返回 -1，其他异常返回 None。
     """
     if not all(ssh_config.values()):
-        logger.error(f"SSH configuration is incomplete or contains empty values.\n  ssh_config = {ssh_config}")
+        logger.error(f"SSH configuration is incomplete or contains empty values")
         return -1
 
     try:
@@ -37,5 +37,5 @@ def ssh_test(ssh_config: dict) -> Optional[int]:
             ssh.connect(**ssh_config)
             return 0
     except Exception:
-        logger.exception(f"An unexpected error occurred\n  ssh_config = {ssh_config}")
+        logger.exception(f"An unexpected error occurred。")
         return None

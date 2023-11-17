@@ -43,11 +43,11 @@ def mysql_query_with_ssh(ssh_config: Dict[str, Any], mysql_config: Dict[str, Any
     required_keys_ssh = ['hostname', 'port', 'username', 'password']
 
     if not all(key in ssh_config and ssh_config[key] for key in required_keys_ssh):
-        logger.error(f"SSH configuration keys are missing or contain empty values: {ssh_config}")
+        logger.error(f"SSH configuration keys are missing or contain empty values.")
         return None
 
     if not all(key in mysql_config and mysql_config[key] for key in required_keys_mysql):
-        logger.error(f"MySQL configuration keys are missing or contain empty values: {mysql_config}")
+        logger.error(f"MySQL configuration keys are missing or contain empty values.")
         return None
 
     try:
@@ -67,5 +67,5 @@ def mysql_query_with_ssh(ssh_config: Dict[str, Any], mysql_config: Dict[str, Any
 
                 return mysql_query(mysql_config, query_sql)
     except Exception:
-        logger.exception(f"An error occurred\n  ssh_config = {ssh_config}\n  mysql_config = {mysql_config}")
+        logger.exception(f"An error occurred.")
         return None

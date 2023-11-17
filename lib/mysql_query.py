@@ -31,7 +31,7 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[tuple[
     """
     required_keys = ['host', 'port', 'user', 'password', 'db']
     if not all(key in mysql_config and mysql_config[key] for key in required_keys):
-        logger.error(f"MySQL configuration keys are missing or contain empty values:\n  {mysql_config}")
+        logger.error(f"MySQL configuration keys are missing or contain empty values")
         return None
 
     try:

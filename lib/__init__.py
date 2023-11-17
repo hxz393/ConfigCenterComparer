@@ -6,7 +6,6 @@ from .get_resource_path import get_resource_path
 from .logging_config import logging_config
 from .mysql_query import mysql_query
 from .mysql_query_with_ssh import mysql_query_with_ssh
-from .modify_name import modify_name
 from .read_file_to_list import read_file_to_list
 from .read_json_to_dict import read_json_to_dict
 from .request_url import request_url
