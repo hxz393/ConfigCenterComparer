@@ -56,7 +56,7 @@ class DialogSettingsMain(QDialog):
         self.setWindowTitle(self.lang['ui.dialog_settings_main_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-setting-26')))
         self.setStyleSheet("font-size: 14px;")
-        self.setMinimumSize(290, 500)
+        self.setMinimumSize(350, 450)
 
         # 从配置文件读取配置
         self.config_main, _ = config_init()
@@ -208,7 +208,7 @@ class DialogSettingsMain(QDialog):
             else:
                 message_show('Critical', self.lang['ui.dialog_settings_main_14'])
         except Exception:
-            logger.exception("")
+            logger.exception("Unexpected error")
             self.label_status.setText(self.lang['label_status_error'])
 
     def reject(self) -> None:
@@ -271,7 +271,7 @@ class DialogSettingsMain(QDialog):
             write_dict_to_json(os.path.normpath(CONFIG_MAIN_PATH), self.config_main)
             return True
         except Exception:
-            logger.exception(f"")
+            logger.exception("Unexpected error")
             return False
 
     def check_language_change(self) -> None:

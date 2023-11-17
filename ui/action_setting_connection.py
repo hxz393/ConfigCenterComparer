@@ -55,7 +55,7 @@ class ActionSettingConnection:
         :return: 无返回值。
         """
         try:
-            dialog = DialogSettingsConnection(self.lang)
+            dialog = DialogSettingsConnection(self.main_window)
             dialog.exec_()
         except Exception:
             logger.exception(f"An error occurred while opening the settings dialog")
