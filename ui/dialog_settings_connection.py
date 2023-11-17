@@ -51,7 +51,7 @@ class DialogSettingsConnection(QDialog):
         self.setWindowTitle(self.lang['ui.dialog_settings_connection_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-database-administrator-26')))
         self.setStyleSheet("font-size: 14px;")
-        self.setMinimumSize(350, 450)
+        self.setMinimumSize(370, 490)
 
         self.config_main, self.config_connection = config_init()
         self.tab_config = {
@@ -346,5 +346,6 @@ class DialogSettingsConnection(QDialog):
         :type fields: list
         """
         self.config_connection[config_key][f'{service}_on'] = self.findChild(QCheckBox, f"{config_key}_{service}_check_box").isChecked()
+        print(self.config_connection[config_key][f'{service}_on'])
         for field in fields:
             self.config_connection[config_key][service][field] = self.findChild(QLineEdit, f"{config_key}_{service}_{field}").text()

@@ -199,9 +199,9 @@ class TableMain(QTableWidget):
             self.insertRow(row_position)
             # 插入单元格数据
             for column, item_data in enumerate(data):
-                # 默认设置显示字符串，也叫 Qt.DisplayRole。获取方法item.text() 或 item.data(Qt.UserRole)
+                # 默认设置显示字符串，也叫 Qt.DisplayRole。获取方法item.text() 或 item.data(Qt.DisplayRole)，设置方法
                 item = QTableWidgetItem(str(item_data[0]))
-                # 设置实际数据，也叫 Qt.UserRole。获取方法 item.data(Qt.DisplayRole)
+                # 设置实际数据，也叫 Qt.UserRole。获取方法 item.data(Qt.UserRole)
                 item.setData(Qt.UserRole, item_data[1])
                 # 设置单元格不可编辑状态
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)

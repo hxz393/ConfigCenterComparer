@@ -34,6 +34,6 @@ def update_config_skip_status(results: Dict[str, Dict[str, str]]) -> None:
 
         # 更新结果字典
         for index_key in results:
-            results[index_key]['skip_status'] = '1' if index_key in skip_list else '0'
+            results[index_key]['skip_status'] = 'yes' if index_key in skip_list else 'no'
     except Exception:
         logger.exception("Error occurred while applying skip status to results")

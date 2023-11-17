@@ -68,21 +68,21 @@ class ActionStart:
         self.start_work.signal.connect(self.show_result_message)
         self.start_work.start()
 
-    def show_result_message(self, result: int):
+    def show_result_message(self, result: str):
         """
         显示配置比较结果的消息。
 
         此方法根据配置比较的结果显示不同的消息提示。
 
         :param result: 配置比较的结果代码。
-        :type result: int
+        :type result: str
         """
         self.action_start.setEnabled(True)
         self.label_status.setText(self.lang['label_status_error'] if result else '')
         message = {
-            1: ('Warning', self.lang['ui.action_start_4']),
-            2: ('Warning', self.lang['ui.action_start_5']),
-            -1: ('Critical', self.lang['ui.action_start_7'])
+            'no query result': ('Warning', self.lang['ui.action_start_4']),
+            'add to table error': ('Warning', self.lang['ui.action_start_5']),
+            'run error': ('Critical', self.lang['ui.action_start_7'])
         }.get(result, None)
         if message:
             message_show(*message)
@@ -96,7 +96,7 @@ class StartWork(QThread):
 
     使用 PyQt 的信号-槽机制来进行线程间的通信。
     """
-    signal = pyqtSignal(int)
+    signal = pyqtSignal(str)
 
     def __init__(self, table, filter_bar, lang):
         """
@@ -127,10 +127,10 @@ class StartWork(QThread):
             if not self.perform_query():
                 return
             self.finalize()
-            self.signal.emit(0)
+            self.signal.emit('done')
         except Exception:
             logger.exception('Error occurred during execution')
-            self.signal.emit(-1)
+            self.signal.emit('run error')
 
     def initialize(self):
         """
@@ -157,12 +157,12 @@ class StartWork(QThread):
         """
         query_results = start_query(self.config_connection, self.config_main)
         if not query_results:
-            self.signal.emit(1)
+            self.signal.emit('no query result')
             return False
 
         add_to_table_result = self.table_results_manager.add_results_to_table(query_results)
         if not add_to_table_result:
-            self.signal.emit(2)
+            self.signal.emit('add to table error')
             return False
 
         return True
@@ -243,13 +243,13 @@ class TableResultsManager:
         """
         # 定义状态映射
         consistency_status_mapping = {
-            "0": self.lang['ui.action_start_8'],
-            "1": self.lang['ui.action_start_9'],
-            "2": self.lang['ui.action_start_10']
+            "inconsistent": self.lang['ui.action_start_8'],
+            "fully": self.lang['ui.action_start_9'],
+            "partially": self.lang['ui.action_start_10']
         }
         skip_status_mapping = {
-            "0": self.lang['ui.action_start_11'],
-            "1": self.lang['ui.action_start_12']
+            "no": self.lang['ui.action_start_11'],
+            "yes": self.lang['ui.action_start_12']
         }
 
         # 基本键列表

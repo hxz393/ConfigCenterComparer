@@ -80,8 +80,8 @@ class ActionTest:
 
         message_info = ''.join(
             f'<b>{result["env_name"]}</b> {self.lang["ui.action_test_4"]}<br>'
-            f'<span style="color: {"green" if result["ssh_test_result"] == 0 else "red"};">'
-            f'{"SSH " + self.lang["ui.action_test_5"] if result["ssh_test_result"] == 0 else "SSH " + self.lang["ui.action_test_6"]}</span> '
+            f'<span style="color: {"green" if result["ssh_test_result"] else "red"};">'
+            f'{"SSH " + self.lang["ui.action_test_5"] if result["ssh_test_result"] else "SSH " + self.lang["ui.action_test_6"]}</span> '
             f'<span style="color: {"green" if result["mysql_test_result"] else "red"};">'
             f'{"MySQL " + self.lang["ui.action_test_5"] if result["mysql_test_result"] else "MySQL " + self.lang["ui.action_test_6"]}</span><br>'
             for result in test_result

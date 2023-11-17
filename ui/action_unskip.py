@@ -88,7 +88,7 @@ class ActionUnskip:
         :rtype: str
         """
         row = item.row()
-        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "0")
+        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "no")
         self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_11'])
         return f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}"
 

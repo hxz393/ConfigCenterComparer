@@ -24,10 +24,10 @@ def update_config_consistency_status(results: Dict[str, Dict[str, Any]], query_s
     `results` 包含不同环境下配置文件的查询结果，`query_statuses` 包含各环境配置查询的状态（成功或失败）。
     函数遍历传入的配置结果字典，对每个配置项进行一致性判断，更新其一致性状态。
 
-    完全一致（1）：所有配置项值相同；
-    部分一致（2）：PRO和PRE环境配置项值相同，但不是全部；
-    未知状态（3）：存在某个环境独有配置项值；
-    不一致（0）：所有配置项值都不相同。
+    完全一致（fully）：所有配置项值相同；
+    部分一致（partially）：PRO和PRE环境配置项值相同，但不是全部；
+    未知状态（unknown）：存在某个环境独有配置项值；
+    不一致（inconsistent）：所有配置项值都不相同。
 
     :param results: 包含各环境下配置文件查询结果的字典。
     :type results: Dict[str, Dict[str, Any]]
@@ -42,13 +42,13 @@ def update_config_consistency_status(results: Dict[str, Dict[str, Any]], query_s
             values = [config[k] for k in config_keys if config.get(k) is not None]
 
             if len(values) <= 1:
-                consistency_status = '3'
+                consistency_status = 'unknown'
             elif all(val == values[0] for val in values) and len(values) == len(config_keys):
-                consistency_status = '1'
+                consistency_status = 'fully'
             elif config.get('PRO_CONFIG') == config.get('PRE_CONFIG') and config.get('PRO_CONFIG') is not None:
-                consistency_status = '2'
+                consistency_status = 'partially'
             else:
-                consistency_status = '0'
+                consistency_status = 'inconsistent'
 
             results[key]['consistency_status'] = consistency_status
     except Exception:

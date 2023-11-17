@@ -56,7 +56,7 @@ class DialogSettingsMain(QDialog):
         self.setWindowTitle(self.lang['ui.dialog_settings_main_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-setting-26')))
         self.setStyleSheet("font-size: 14px;")
-        self.setMinimumSize(350, 450)
+        self.setMinimumSize(370, 490)
 
         # 从配置文件读取配置
         self.config_main, _ = config_init()
