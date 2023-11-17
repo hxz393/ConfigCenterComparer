@@ -13,7 +13,7 @@ from typing import Dict, List, Tuple
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QHeaderView
 
 from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import COL_INFO
@@ -140,6 +140,8 @@ class StartWork(QThread):
         """
         # 清空表格数据
         self.table.clear()
+        # 初始化表宽
+        self.table.set_header_resize()
         # 禁用表格排序，防止展示空数据
         self.table.setSortingEnabled(False)
         # 加载配置信息
@@ -175,6 +177,8 @@ class StartWork(QThread):
         self.table.setSortingEnabled(True)
         # 默认按第一列升序排序
         self.table.sortByColumn(0, Qt.AscendingOrder)
+        # 允许用户调整列宽
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         # 更新过滤器，过滤服务中插入值
         self.filter.filter_options_add()
         # 运行过滤器
