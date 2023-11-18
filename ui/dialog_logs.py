@@ -96,17 +96,17 @@ class DialogLogs(QDialog):
         layout.addWidget(self.text_edit)
         layout.addLayout(button_layout)
 
-        self.load_logs()
+        self._load_logs()
 
-    def load_logs(self) -> None:
+    def _load_logs(self) -> None:
         """
         加载并处理日志文件。
 
         此方法读取日志文件的内容，并根据当前的筛选级别显示日志信息。
         """
         try:
-            logs_content = self.read_logs_file()
-            self.process_logs(logs_content)
+            logs_content = self._read_logs_file()
+            self._process_logs(logs_content)
         except Exception:
             logger.exception("Open log file error")
             logger.exception("Error opening log file")
@@ -126,7 +126,7 @@ class DialogLogs(QDialog):
             self.label_status.setText(self.lang['label_status_error'])
 
     @staticmethod
-    def read_logs_file() -> str:
+    def _read_logs_file() -> str:
         """
         读取日志文件内容。
 
@@ -142,7 +142,7 @@ class DialogLogs(QDialog):
             logger.exception("Error reading log file")
             return ""
 
-    def process_logs(self, logs_content: str, filter_level: Optional[str] = None) -> None:
+    def _process_logs(self, logs_content: str, filter_level: Optional[str] = None) -> None:
         """
         处理并显示日志。
 
@@ -159,10 +159,10 @@ class DialogLogs(QDialog):
             start = start_positions[i]
             end = start_positions[i + 1] if i + 1 < len(start_positions) else None
             log_entry = logs_content[start:end]
-            if filter_level is None or self.is_log_entry_of_level(log_entry, filter_level):
-                self.parse_and_display_log(log_entry)
+            if filter_level is None or self._is_log_entry_of_level(log_entry, filter_level):
+                self._parse_and_display_log(log_entry)
 
-    def parse_and_display_log(self, log_entry: str) -> None:
+    def _parse_and_display_log(self, log_entry: str) -> None:
         """
         解析并显示单条日志。
 
@@ -174,10 +174,10 @@ class DialogLogs(QDialog):
         match = DialogLogs.LOG_PATTERN.search(log_entry)
         if match:
             log_level = match.group(1)
-            color = self.get_color_for_level(log_level)
+            color = self._get_color_for_level(log_level)
         else:
             color = "black"
-        self.append_log(log_entry, color)
+        self._append_log(log_entry, color)
 
     def filter_logs(self) -> None:
         """
@@ -188,13 +188,13 @@ class DialogLogs(QDialog):
         try:
             selected_level = self.combo_box.currentText()
             self.text_edit.clear()
-            logs_content = self.read_logs_file()
-            self.process_logs(logs_content, selected_level)
+            logs_content = self._read_logs_file()
+            self._process_logs(logs_content, selected_level)
         except Exception:
             logger.exception("Error filtering logs")
             self.label_status.setText(self.lang['label_status_error'])
 
-    def append_log(self, log: str, color: str) -> None:
+    def _append_log(self, log: str, color: str) -> None:
         """
         将日志添加到文本编辑器。
 
@@ -213,7 +213,7 @@ class DialogLogs(QDialog):
         cursor.insertText(log, color_format)
 
     @staticmethod
-    def get_color_for_level(level: str) -> str:
+    def _get_color_for_level(level: str) -> str:
         """
         获取日志级别对应的颜色。
 
@@ -235,7 +235,7 @@ class DialogLogs(QDialog):
 
     #
 
-    def is_log_entry_of_level(self, log_entry: str, selected_level: str) -> bool:
+    def _is_log_entry_of_level(self, log_entry: str, selected_level: str) -> bool:
         """
         判断日志条目是否为选定级别。
 

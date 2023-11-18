@@ -113,6 +113,7 @@ class DialogAbout(QDialog):
         # 版本信息
         version = QLabel(f"{self.lang['ui.dialog_about_3']}{VERSION_INFO}")
         version.setContentsMargins(0, 0, 0, 10)
+        version.setStyleSheet("font-weight: bold; text-align: center;")
         layout.addWidget(version)
 
         return layout

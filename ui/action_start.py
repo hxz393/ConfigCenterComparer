@@ -126,18 +126,18 @@ class StartWork(QThread):
         线程完成或出现异常时，会发出信号通知主线程。
         """
         try:
-            self.initialize()
+            self._initialize()
             logger.info(f'Start running')
-            if not self.perform_query():
+            if not self._perform_query():
                 return
-            self.finalize()
+            self._finalize()
             logger.info(f'Running done')
             self.signal.emit('done')
         except Exception:
             logger.exception('Error occurred during execution')
             self.signal.emit('run error')
 
-    def initialize(self):
+    def _initialize(self):
         """
         初始化配置比较器线程。
 
@@ -152,7 +152,7 @@ class StartWork(QThread):
         # 加载配置信息
         self.config_main, self.config_connection = read_config()
 
-    def perform_query(self) -> bool:
+    def _perform_query(self) -> bool:
         """
         执行配置查询操作。
 
@@ -172,7 +172,7 @@ class StartWork(QThread):
 
         return True
 
-    def finalize(self) -> None:
+    def _finalize(self) -> None:
         """
         完成配置比较器线程的收尾工作。
 
@@ -227,15 +227,15 @@ class TableResultsManager:
         """
         try:
             formatted_results, query_statuses = query_results
-            table_rows = self.prepare_table_rows(formatted_results)
-            self.add_rows_to_table(table_rows)
-            self.update_table_column_hide(query_statuses)
+            table_rows = self._prepare_table_rows(formatted_results)
+            self._add_rows_to_table(table_rows)
+            self._update_table_column_hide(query_statuses)
             return True
         except Exception:
             logger.exception('Error occurred during adding results to table')
             return False
 
-    def prepare_table_rows(self, formatted_results: Dict) -> List[List]:
+    def _prepare_table_rows(self, formatted_results: Dict) -> List[List]:
         """
         准备要添加到表格的行数据。
 
@@ -276,7 +276,7 @@ class TableResultsManager:
             for result in formatted_results.values()
         ]
 
-    def add_rows_to_table(self, table_rows: List[List]):
+    def _add_rows_to_table(self, table_rows: List[List]):
         """
         将行数据添加到表格中。
 
@@ -288,7 +288,7 @@ class TableResultsManager:
         for row in table_rows:
             self.table.add_row(row)
 
-    def update_table_column_hide(self, query_statuses: Dict):
+    def _update_table_column_hide(self, query_statuses: Dict):
         """
         根据查询状态更新表格列的显示或隐藏。
 

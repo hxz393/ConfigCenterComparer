@@ -74,15 +74,15 @@ class DialogSettingsConnection(QDialog):
         self.tab_widget = QTabWidget(self)
         # 创建标签页
         for config_key, tab_name in self.tab_config.items():
-            self.construct_tab(config_key, tab_name)
+            self._construct_tab(config_key, tab_name)
 
         # 创建按钮
-        self.construct_buttons()
+        self._construct_buttons()
         # 加入主布局
         layout.addRow(self.tab_widget)
         layout.addRow(self.button_layout)
 
-    def construct_tab(self, config_key: str, tab_name: str) -> None:
+    def _construct_tab(self, config_key: str, tab_name: str) -> None:
         """
         构建一个标签页。
 
@@ -93,14 +93,14 @@ class DialogSettingsConnection(QDialog):
         """
         tab = QWidget()
         tab_layout = QVBoxLayout(tab)
-        tab_layout.addWidget(self.create_mysql_group(config_key))
-        tab_layout.addWidget(self.create_ssh_group(config_key))
+        tab_layout.addWidget(self._create_mysql_group(config_key))
+        tab_layout.addWidget(self._create_ssh_group(config_key))
         # 组件之间添加弹性空间
         tab_layout.addStretch()
         # 插入标签页
         self.tab_widget.addTab(tab, tab_name)
 
-    def construct_buttons(self) -> None:
+    def _construct_buttons(self) -> None:
         """
         构建并配置对话框的按钮。
 
@@ -144,7 +144,7 @@ class DialogSettingsConnection(QDialog):
         """
         check_box = QCheckBox()
         check_box.setObjectName(f"{config_key}_{name}_check_box")
-        check_box.stateChanged.connect(lambda: self.toggle_edit_controls(check_box.isChecked(), group_box))
+        check_box.stateChanged.connect(lambda: self._toggle_edit_controls(check_box.isChecked(), group_box))
         check_box.setChecked(self.config_connection[config_key][f'{name}_on'])
         layout.addRow(QLabel(label_name), check_box)
         return check_box
@@ -198,7 +198,7 @@ class DialogSettingsConnection(QDialog):
         layout.addRow(QLabel(label_name), line_edit)
         return line_edit
 
-    def create_ssh_group(self, config_key: str) -> QGroupBox:
+    def _create_ssh_group(self, config_key: str) -> QGroupBox:
         """
         创建并配置SSH设置的界面组件。
 
@@ -227,10 +227,10 @@ class DialogSettingsConnection(QDialog):
         # 将设置区域添加到对话框的布局中
         ssh_group_box.setLayout(ssh_layout)
         # 根据初始状态设置控件的可编辑状态
-        self.toggle_edit_controls(ssh_check_box.isChecked(), ssh_group_box)
+        self._toggle_edit_controls(ssh_check_box.isChecked(), ssh_group_box)
         return ssh_group_box
 
-    def create_mysql_group(self, config_key: str) -> QGroupBox:
+    def _create_mysql_group(self, config_key: str) -> QGroupBox:
         """
         创建并配置MySQL设置的界面组件。
 
@@ -258,10 +258,10 @@ class DialogSettingsConnection(QDialog):
 
         # 将设置区域添加到对话框的布局中
         mysql_group_box.setLayout(mysql_layout)
-        self.toggle_edit_controls(mysql_check_box.isChecked(), mysql_group_box)
+        self._toggle_edit_controls(mysql_check_box.isChecked(), mysql_group_box)
         return mysql_group_box
 
-    def toggle_edit_controls(self, is_checked: bool, root: Union[QWidget, QObject]) -> None:
+    def _toggle_edit_controls(self, is_checked: bool, root: Union[QWidget, QObject]) -> None:
         """
         根据复选框的状态切换输入框的可编辑状态。
 
@@ -271,10 +271,10 @@ class DialogSettingsConnection(QDialog):
         :type root: Union[QWidget, QObject]
         """
         for widget in root.findChildren(QLineEdit):
-            self.set_line_edit_style(widget, not is_checked)
+            self._set_line_edit_style(widget, not is_checked)
 
     @staticmethod
-    def set_line_edit_style(line_edit: QLineEdit, is_read_only: bool) -> None:
+    def _set_line_edit_style(line_edit: QLineEdit, is_read_only: bool) -> None:
         """
         设置输入框的只读状态和样式。
 
@@ -298,7 +298,7 @@ class DialogSettingsConnection(QDialog):
         """
         try:
             # 从输入框更新 config_connection
-            self.update_config()
+            self._update_config()
             # 将更新后的配置写入文件
             if write_dict_to_json(os.path.normpath(config_path_get(self.config_main)), self.config_connection):
                 self.label_status.setText(self.lang['ui.dialog_settings_main_13'])
@@ -317,7 +317,7 @@ class DialogSettingsConnection(QDialog):
         """
         super().reject()
 
-    def update_config(self) -> None:
+    def _update_config(self) -> None:
         """
         更新连接配置字典。
 
@@ -330,9 +330,9 @@ class DialogSettingsConnection(QDialog):
 
         for config_key in self.tab_config.keys():
             for service, fields in config_fields.items():
-                self.update_service_config(config_key, service, fields)
+                self._update_service_config(config_key, service, fields)
 
-    def update_service_config(self, config_key: str, service: str, fields: list) -> None:
+    def _update_service_config(self, config_key: str, service: str, fields: list) -> None:
         """
         更新特定服务的配置。
 

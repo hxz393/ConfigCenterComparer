@@ -200,9 +200,9 @@ class DialogSettingsMain(QDialog):
         当用户点击确认按钮时，更新配置，并尝试将其写入配置文件。如果语言设置发生变化，提示重启。
         """
         try:
-            self.update_config()
-            if self.write_config_to_file():
-                self.check_language_change()
+            self._update_config()
+            if self._write_config_to_file():
+                self._check_language_change()
                 self.label_status.setText(self.lang['ui.dialog_settings_main_13'])
                 super().accept()
             else:
@@ -219,7 +219,7 @@ class DialogSettingsMain(QDialog):
         """
         super().reject()
 
-    def update_config(self) -> None:
+    def _update_config(self) -> None:
         """
         更新配置信息。
 
@@ -227,7 +227,7 @@ class DialogSettingsMain(QDialog):
         """
         before_list = self.fix_name_before.text().split(' ')
         after_list = self.fix_name_after.text().split(' ')
-        before_list, after_list = self.adjust_list_lengths(before_list, after_list)
+        before_list, after_list = self._adjust_list_lengths(before_list, after_list)
 
         self.config_main['fix_name_before'] = ' '.join(before_list)
         self.config_main['fix_name_after'] = ' '.join(after_list)
@@ -238,7 +238,7 @@ class DialogSettingsMain(QDialog):
         self.config_main['fix_name_right'] = self.fix_name_right.text()
 
     @staticmethod
-    def adjust_list_lengths(before_list: List[str], after_list: List[str]) -> Tuple[List[str], List[str]]:
+    def _adjust_list_lengths(before_list: List[str], after_list: List[str]) -> Tuple[List[str], List[str]]:
         """
         调整两个列表的长度使其相等。
 
@@ -258,7 +258,7 @@ class DialogSettingsMain(QDialog):
             after_list = after_list[:min_length]
         return before_list, after_list
 
-    def write_config_to_file(self) -> bool:
+    def _write_config_to_file(self) -> bool:
         """
         将配置信息写入文件。
 
@@ -274,7 +274,7 @@ class DialogSettingsMain(QDialog):
             logger.exception("Unexpected error")
             return False
 
-    def check_language_change(self) -> None:
+    def _check_language_change(self) -> None:
         """
         检查语言设置是否更改。
 
