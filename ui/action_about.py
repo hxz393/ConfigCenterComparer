@@ -55,7 +55,7 @@ class ActionAbout:
         :return: 无返回值。
         """
         try:
-            dialog = DialogAbout()
+            dialog = DialogAbout(self.main_window)
             dialog.exec_()
         except Exception:
             logger.exception(f"An error occurred while opening the about dialog")
