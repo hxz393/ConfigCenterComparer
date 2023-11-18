@@ -15,7 +15,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QFormLayout, QTextEdit
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import VERSION_INFO, GITHUB_URL, PROGRAM_NAME, WEBSITE_URL, AUTHUR_NAME
+from config.settings import VERSION_INFO, GITHUB_URL, PROGRAM_NAME, WEBSITE_URL, AUTHOR_NAME
 from lib.get_resource_path import get_resource_path
 
 logger = logging.getLogger(__name__)
@@ -126,7 +126,7 @@ class DialogAbout(QDialog):
         """
         # 多行内容
         infos = {
-            self.lang['ui.dialog_about_4']: AUTHUR_NAME,
+            self.lang['ui.dialog_about_4']: AUTHOR_NAME,
             self.lang['ui.dialog_about_5']: WEBSITE_URL,
             self.lang['ui.dialog_about_6']: GITHUB_URL
         }

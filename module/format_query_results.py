@@ -31,7 +31,7 @@ def format_query_results(query_results: Tuple[Tuple[str, Any]], env_name: str, n
     :type env_name: str
     :param name_config: 包含配置中心类型和其它相关配置的字典。
     :type name_config: Dict[str, Any]
-    :param formatted_results: 已格式化的结果字典，用于合并新的格式化结果。
+    :param formatted_results: 已格式化的结果字典，用于合并新格式化结果。
     :type formatted_results: Dict[str, Dict[str, Any]]
     """
     try:

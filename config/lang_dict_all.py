@@ -1,3 +1,6 @@
+"""
+语言字典
+"""
 lang_dict_all = {
     'English': {
         'main_1': 'Ready',

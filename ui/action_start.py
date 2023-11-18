@@ -90,6 +90,7 @@ class ActionStart:
             if message:
                 message_show(*message)
 
+
 class StartWork(QThread):
     """
     用于后台执行配置比较的线程类。
