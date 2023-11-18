@@ -78,15 +78,17 @@ class ActionStart:
         :type result: str
         """
         self.action_start.setEnabled(True)
-        self.label_status.setText(self.lang['label_status_error'] if result else '')
-        message = {
-            'no query result': ('Warning', self.lang['ui.action_start_4']),
-            'add to table error': ('Warning', self.lang['ui.action_start_5']),
-            'run error': ('Critical', self.lang['ui.action_start_7'])
-        }.get(result, None)
-        if message:
-            message_show(*message)
-
+        if result == 'done':
+            return
+        else:
+            self.label_status.setText(self.lang['label_status_error'])
+            message = {
+                'no query result': ('Warning', self.lang['ui.action_start_4']),
+                'add to table error': ('Warning', self.lang['ui.action_start_5']),
+                'run error': ('Critical', self.lang['ui.action_start_7'])
+            }.get(result, None)
+            if message:
+                message_show(*message)
 
 class StartWork(QThread):
     """
@@ -111,7 +113,7 @@ class StartWork(QThread):
         """
         super().__init__()
         self.table = table
-        self.filter = filter_bar
+        self.filter_bar = filter_bar
         self.table_results_manager = TableResultsManager(table, lang)
         self.config_main, self.config_connection = None, None
 
@@ -180,9 +182,9 @@ class StartWork(QThread):
         # 允许用户调整列宽
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         # 更新过滤器，过滤服务中插入值
-        self.filter.filter_options_add()
+        self.filter_bar.filter_options_add()
         # 运行过滤器
-        self.filter.filter_table()
+        self.filter_bar.filter_table()
 
 
 class TableResultsManager:
