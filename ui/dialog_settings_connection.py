@@ -346,6 +346,5 @@ class DialogSettingsConnection(QDialog):
         :type fields: list
         """
         self.config_connection[config_key][f'{service}_on'] = self.findChild(QCheckBox, f"{config_key}_{service}_check_box").isChecked()
-        print(self.config_connection[config_key][f'{service}_on'])
         for field in fields:
             self.config_connection[config_key][service][field] = self.findChild(QLineEdit, f"{config_key}_{service}_{field}").text()

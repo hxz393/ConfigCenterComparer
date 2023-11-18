@@ -81,7 +81,7 @@ class DialogAbout(QDialog):
         # 程序图标
         image = QLabel()
         image.setContentsMargins(20, 10, 20, 10)
-        image.setPixmap(QPixmap(get_resource_path("media/main-96.ico")))
+        image.setPixmap(QPixmap(get_resource_path("media/main.ico")))
         top_layout.addWidget(image)
         # 名称和版本信息
         top_layout.addLayout(self._title_and_version())

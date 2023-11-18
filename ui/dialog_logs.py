@@ -186,7 +186,7 @@ class DialogLogs(QDialog):
         此方法根据用户在下拉框中选择的日志级别筛选日志。
         """
         try:
-            selected_level = self.combo_box.currentData()
+            selected_level = self.combo_box.currentText()
             self.text_edit.clear()
             logs_content = self.read_logs_file()
             self.process_logs(logs_content, selected_level)
@@ -234,8 +234,8 @@ class DialogLogs(QDialog):
         return colors.get(level, "black")
 
     #
-    @staticmethod
-    def is_log_entry_of_level(log_entry: str, selected_level: str) -> bool:
+
+    def is_log_entry_of_level(self, log_entry: str, selected_level: str) -> bool:
         """
         判断日志条目是否为选定级别。
 
@@ -248,7 +248,7 @@ class DialogLogs(QDialog):
         :return: 日志条目是否为选定级别。
         :rtype: bool
         """
-        if selected_level is None:
+        if selected_level == self.lang['ui.dialog_logs_3']:
             return True
         selected_index = DialogLogs.LEVELS.index(selected_level)
         for level in DialogLogs.LEVELS[selected_index:]:

@@ -126,9 +126,11 @@ class StartWork(QThread):
         """
         try:
             self.initialize()
+            logger.info(f'Start running')
             if not self.perform_query():
                 return
             self.finalize()
+            logger.info(f'Running done')
             self.signal.emit('done')
         except Exception:
             logger.exception('Error occurred during execution')

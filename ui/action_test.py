@@ -62,6 +62,7 @@ class ActionTest:
 
         self.test_run = TestRun()
         self.test_run.signal.connect(self.show_result_message)
+
         self.test_run.start()
 
     def show_result_message(self, test_result) -> None:
@@ -112,8 +113,10 @@ class TestRun(QThread):
         此方法在线程启动时被调用。它执行网络连接测试，并通过信号发送测试结果。
         """
         try:
+            logger.info(f'Start running test')
             _, config_connection = read_config()
             test_result = test_connection(config_connection)
+            logger.info(f'Testing done.')
         except Exception:
             logger.exception(f'Error during testing')
             test_result = None

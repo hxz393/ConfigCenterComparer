@@ -149,6 +149,10 @@ class TableMain(QTableWidget):
         menu.addAction(separator)
         menu.addAction(self.main_window.ActionSkip.action_skip)
         menu.addAction(self.main_window.ActionUnskip.action_unskip)
+        sep = QAction(menu)
+        sep.setSeparator(True)
+        menu.addAction(sep)
+        menu.addAction(self.main_window.ActionSave.action_save)
         menu.exec_(self.viewport().mapToGlobal(pos))
 
     def _header_context_menu(self, pos: QPoint) -> None:
