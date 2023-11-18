@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, Q
 from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from lib.write_dict_to_json import write_dict_to_json
-from module.config_init import config_init
+from module.read_config import read_config
 from module.config_path_get import config_path_get
 from ui.message_show import message_show
 
@@ -53,7 +53,7 @@ class DialogSettingsConnection(QDialog):
         self.setStyleSheet("font-size: 14px;")
         self.setMinimumSize(370, 490)
 
-        self.config_main, self.config_connection = config_init()
+        self.config_main, self.config_connection = read_config()
         self.tab_config = {
             'PRO_CONFIG': self.lang['ui.dialog_settings_connection_2'],
             'PRE_CONFIG': self.lang['ui.dialog_settings_connection_3'],

@@ -1,7 +1,7 @@
 """
 这是一个Python文件，用于初始化和获取应用程序的配置信息。
 
-本文件包含一个主要函数：`config_init`。`config_init` 函数负责初始化配置并返回应用程序的主配置和连接配置。该函数尝试从预定义的配置文件路径读取配置信息。如果读取成功，返回包含主配置和连接配置的元组；如果失败，则返回默认配置。
+本文件包含一个主要函数：`config_read`。`config_read` 函数负责初始化配置并返回应用程序的主配置和连接配置。该函数尝试从预定义的配置文件路径读取配置信息。如果读取成功，返回包含主配置和连接配置的元组；如果失败，则返回默认配置。
 
 在函数体中，首先尝试从 `CONFIG_MAIN_PATH` 读取主配置，然后从配置中获取连接配置的路径，并尝试读取连接配置。如果在这个过程中出现任何错误，函数会捕获异常，并使用 `logging` 模块记录错误信息，然后返回默认配置。
 
@@ -23,7 +23,7 @@ from .config_path_get import config_path_get
 logger = logging.getLogger(__name__)
 
 
-def config_init() -> Optional[Tuple[Dict[str, Any], Dict[str, Any]]]:
+def read_config() -> Optional[Tuple[Dict[str, Any], Dict[str, Any]]]:
     """
     初始化并获取配置字典。
 

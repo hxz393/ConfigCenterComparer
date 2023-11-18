@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QAction, QHeaderView
 from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import COL_INFO
 from lib.get_resource_path import get_resource_path
-from module.config_init import config_init
+from module.read_config import read_config
 from module.start_query import start_query
 from .message_show import message_show
 
@@ -147,7 +147,7 @@ class StartWork(QThread):
         # 禁用表格排序，防止展示空数据
         self.table.setSortingEnabled(False)
         # 加载配置信息
-        self.config_main, self.config_connection = config_init()
+        self.config_main, self.config_connection = read_config()
 
     def perform_query(self) -> bool:
         """

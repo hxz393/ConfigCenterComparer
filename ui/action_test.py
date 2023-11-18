@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QAction
 
 from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
-from module.config_init import config_init
+from module.read_config import read_config
 from module.test_connection import test_connection
 from .message_show import message_show
 
@@ -112,7 +112,7 @@ class TestRun(QThread):
         此方法在线程启动时被调用。它执行网络连接测试，并通过信号发送测试结果。
         """
         try:
-            _, config_connection = config_init()
+            _, config_connection = read_config()
             test_result = test_connection(config_connection)
         except Exception:
             logger.exception(f'Error during testing')

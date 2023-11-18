@@ -22,7 +22,7 @@ from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import CONFIG_MAIN_PATH
 from lib.get_resource_path import get_resource_path
 from lib.write_dict_to_json import write_dict_to_json
-from module.config_init import config_init
+from module.read_config import read_config
 from .message_restart import message_restart
 from .message_show import message_show
 
@@ -59,7 +59,7 @@ class DialogSettingsMain(QDialog):
         self.setMinimumSize(370, 490)
 
         # 从配置文件读取配置
-        self.config_main, _ = config_init()
+        self.config_main, _ = read_config()
         # 存储原始语言设置
         self.original_language_setting = self.config_main.get('lang', 'English')
         self.initUI()
