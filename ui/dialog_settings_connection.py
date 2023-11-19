@@ -219,7 +219,7 @@ class DialogSettingsConnection(QDialog):
         # 分隔符
         self._create_separator(ssh_layout)
         # 配置行
-        self._create_line_edit(config_key, 'ssh', 'hostname', '127.0.0.1', "^[0-9.]+$", ssh_layout, self.lang['ui.dialog_settings_connection_8'])
+        self._create_line_edit(config_key, 'ssh', 'hostname', '127.0.0.1', "^[ -~]+$", ssh_layout, self.lang['ui.dialog_settings_connection_8'])
         self._create_line_edit(config_key, 'ssh', 'port', '22', "^[0-9]+$", ssh_layout, self.lang['ui.dialog_settings_connection_9'])
         self._create_line_edit(config_key, 'ssh', 'username', 'root', "^[ -~]+$", ssh_layout, self.lang['ui.dialog_settings_connection_10'])
         self._create_line_edit(config_key, 'ssh', 'password', '123456', "^[ -~]+$", ssh_layout, self.lang['ui.dialog_settings_connection_11'])
@@ -250,7 +250,7 @@ class DialogSettingsConnection(QDialog):
         # 分隔符
         self._create_separator(mysql_layout)
         # 配置行
-        self._create_line_edit(config_key, 'mysql', 'host', '127.0.0.1', "^[0-9.]+$", mysql_layout, self.lang['ui.dialog_settings_connection_8'])
+        self._create_line_edit(config_key, 'mysql', 'host', '127.0.0.1', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_8'])
         self._create_line_edit(config_key, 'mysql', 'port', '3306', "^[0-9]+$", mysql_layout, self.lang['ui.dialog_settings_connection_9'])
         self._create_line_edit(config_key, 'mysql', 'user', 'root', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_10'])
         self._create_line_edit(config_key, 'mysql', 'password', '123456', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_11'])
