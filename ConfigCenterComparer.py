@@ -159,7 +159,6 @@ class ConfigCenterComparer(QMainWindow):
         """
         # 设置窗口大小、图标和名称
         self.setGeometry(10, 10, 1280, 720)
-        self.setMinimumSize(1280, 720)
         self.setWindowTitle(PROGRAM_NAME)
         self.setWindowIcon(QIcon(get_resource_path('media/main.svg')))
 

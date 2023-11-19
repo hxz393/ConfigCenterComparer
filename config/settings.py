@@ -9,7 +9,7 @@ CONFIG_SKIP_PATH = r'config/config_skip.txt'
 LOG_PATH = 'logs/run.log'
 # 程序信息
 PROGRAM_NAME = 'ConfigCenterComparer'
-VERSION_INFO = 'v1.0.0'
+VERSION_INFO = 'v1.0.2'
 AUTHOR_NAME = 'assassing'
 CONTACT_MAIL = 'hxz393@gmail.com'
 WEBSITE_URL = 'https://blog.x2b.net'
@@ -19,11 +19,13 @@ GITHUB_URL = 'https://github.com/hxz393/ConfigCenterComparer'
 # 设置菜单下拉列表
 CONFIG_CENTER_LIST = ['Apollo', 'Nacos',]
 APOLLO_NAME_LIST = ['AppId', 'Name',]
+COLOR_SET_LIST = ['ON', 'OFF',]
 # 默认配置
 DEFAULT_CONFIG_MAIN = {
     'lang': 'English',  # zh-cht en zh-chs
     'config_center': 'Apollo',
     'apollo_name': 'AppId',
+    'color_set': 'ON',
     'fix_name_before': '',
     'fix_name_after': '',
     'fix_name_left': '',
@@ -162,3 +164,5 @@ COLOR_CONSISTENCY_PARTIALLY = '#bbddff'
 COLOR_DEFAULT = '#ffffff'
 COLOR_EMPTY = '#ffdbcd'
 COLOR_SKIP = '#e0e0e0'
+COLOR_HIGHLIGHT = '#ff0000'
+COLOR_FONT_DEFAULT = '#000000'

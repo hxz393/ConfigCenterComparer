@@ -18,7 +18,7 @@ from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QMenu, QAction, QHeaderView
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import COL_INFO
+from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_DEFAULT, COLOR_EMPTY
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class TableMain(QTableWidget):
             self.setEditTriggers(QTableWidget.NoEditTriggers)
             self.setSelectionBehavior(QTableWidget.SelectItems)
             # 隐藏垂直表头
-            self.verticalHeader().setVisible(False)
+            # self.verticalHeader().setVisible(False)
             # 启用自动换行，没生效
             self.setWordWrap(True)
             self.setTextElideMode(Qt.ElideNone)
@@ -215,6 +215,45 @@ class TableMain(QTableWidget):
             logger.exception("Error occurred while adding a new row")
             self.removeRow(row_position)
 
+    def apply_color_to_table(self, rows: List[int]) -> None:
+        """
+        根据一致性和跳过状态给表格行应用颜色。
+
+        :param rows: 要应用颜色的行号列表。
+        :type rows: List[int]
+        """
+        check_none_value_column_list = [
+            COL_INFO['pro_value']['col'],
+            COL_INFO['pre_value']['col'],
+            COL_INFO['test_value']['col'],
+            COL_INFO['dev_value']['col'],
+        ]
+        try:
+            for row in rows:
+                consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
+                skip_data = self.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
+
+                # 忽略状态为是时设置颜色
+                if skip_data == 'yes':
+                    self.apply_color(row, COLOR_SKIP)
+                    continue
+
+                # 根据一致性值设置颜色
+                if consistency_data == 'fully':
+                    self.apply_color(row, COLOR_CONSISTENCY_FULLY)
+                elif consistency_data == 'partially':
+                    self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
+                else:
+                    self.apply_color(row, COLOR_DEFAULT)
+
+                # 遍历指定列检查空值
+                for column in check_none_value_column_list:
+                    if self.item(row, column).text() == 'None':
+                        self.apply_color(row, COLOR_EMPTY, column)
+        except Exception:
+            logger.exception("Exception in apply_color_to_table method")
+            self.label_status.setText(self.lang['label_status_error'])
+
     def apply_color(self, row: int, color: str, column: Optional[int] = None) -> None:
         """
         为指定的行或单元格应用颜色。
@@ -260,9 +299,17 @@ class TableMain(QTableWidget):
         此方法用于清除表格中的所有数据，通常在数据更新或重置时使用。
         """
         try:
-            row_count = self.rowCount()
-            for i in range(row_count)[::-1]:
-                self.removeRow(i)
-        except Exception:
-            logger.exception("Error occurred while clearing the table")
+            # 禁用更新以提高性能
+            self.setUpdatesEnabled(False)
+            # 首先清除所有单元格的内容
+            self.clearContents()
+            # 接着删除所有行
+            while self.rowCount() > 0:
+                self.removeRow(0)
+            # 重新启用更新
+            self.setUpdatesEnabled(True)
+        except Exception as e:
+            logger.exception("Error occurred while clearing the table: {}".format(str(e)))
             self.label_status.setText(self.lang['label_status_error'])
+            # 确保即使发生错误也要重新启用更新
+            self.setUpdatesEnabled(True)

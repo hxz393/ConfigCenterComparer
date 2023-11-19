@@ -1,7 +1,7 @@
 """
-这是一个用于管理配置中心比较过程的Python模块。
+这是一个用于配置中心比较器的 PyQt 应用程序模块。
 
-此模块包含了多个类，包括`ActionStart`、`StartWork`和`TableResultsManager`。这些类协同工作，提供界面交互、后台处理以及结果展示的功能。它们是配置中心比较器的核心组成部分。
+该模块包含 `ActionStart` 和 `StartWork` 两个主要类。`ActionStart` 类负责初始化并处理用户界面的交互功能，如开始操作、显示状态信息等。`StartWork` 类则作为一个后台线程，处理数据查询和表格更新操作。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -9,7 +9,7 @@
 """
 
 import logging
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
@@ -27,27 +27,28 @@ logger = logging.getLogger(__name__)
 
 class ActionStart:
     """
-    负责初始化和启动配置比较过程的类。
+    处理开始动作的类，负责用户界面交互和子线程的初始化。
 
-    此类负责创建启动操作的用户界面组件，并绑定相应的事件。它还负责启动`StartWork`线程，以开始配置的比较和处理过程。
+    此类封装了与软件启动相关的逻辑，包括初始化动作按钮、绑定事件和更新界面状态。
 
-    :param main_window: 主窗口对象，提供界面交互的入口。
+    :param main_window: 主窗口对象，用于界面元素的交互和更新。
     :type main_window: ConfigCenterComparer
     """
 
     def __init__(self, main_window: ConfigCenterComparer):
         """
-        初始化启动动作。
+        初始化 `ActionStart` 类的实例。
 
-        :param main_window: 主窗口对象。
+        :param main_window: 主窗口对象，提供界面交互功能。
         :type main_window: ConfigCenterComparer
         """
+        # 获取需要交互的主界面组件
         self.main_window = main_window
         self.table = self.main_window.get_elements('table')
         self.filter_bar = self.main_window.get_elements('filter_bar')
         self.label_status = self.main_window.get_elements('label_status')
         self.lang = self.main_window.get_elements('lang')
-
+        # 惯例动作属性配置
         self.action_start = QAction(QIcon(get_resource_path('media/icons8-start-26.png')), self.lang['ui.action_start_1'], self.main_window)
         self.action_start.setShortcut('F10')
         self.action_start.setStatusTip(self.lang['ui.action_start_2'])
@@ -55,128 +56,77 @@ class ActionStart:
 
     def start(self) -> None:
         """
-        启动配置比较过程。
+        启动更新动作的处理流程。
 
-        此方法会禁用启动按钮，更新状态栏信息，并创建并启动 `StartWork` 线程以开始配置比较过程。
+        此方法负责初始化和启动一个后台线程 `StartWork`，该线程执行数据查询和表格更新。同时，该方法还负责连接信号和槽以进行 UI 更新。
 
-        通过 PyQt 的信号-槽机制，此方法还会处理线程完成时的回调，以更新用户界面和显示结果信息。
+        :return: None
         """
-        self.action_start.setEnabled(False)
-        self.label_status.setText(self.lang['ui.action_start_3'])
-
-        self.start_work = StartWork(self.table, self.filter_bar, self.lang)
-        self.start_work.signal.connect(self.show_result_message)
+        # 初始化子线程，传入语言字典
+        self.start_work = StartWork(self.lang)
+        # 连接信号槽，都是 UI 操作，必须主线程中进行
+        self.start_work.initialize_signal.connect(self.initialize)
+        self.start_work.table_insert_signal.connect(self.table_insert)
+        self.start_work.table_column_hide_signal.connect(self.table_column_hide)
+        self.start_work.finalize_signal.connect(self.finalize)
+        self.start_work.message.connect(self.show_result_message)
+        # 开始运行
         self.start_work.start()
 
-    def show_result_message(self, result: str):
+    def initialize(self) -> None:
         """
-        显示配置比较结果的消息。
+        初始化界面和状态，在开始操作前执行。
 
-        此方法根据配置比较的结果显示不同的消息提示。
+        此方法用于设置 UI 元素的初始状态，如禁用按钮、清空表格等。
 
-        :param result: 配置比较的结果代码。
-        :type result: str
+        :return: None
         """
-        self.action_start.setEnabled(True)
-        if result == 'done':
-            return
-        else:
-            self.label_status.setText(self.lang['label_status_error'])
-            message = {
-                'no query result': ('Warning', self.lang['ui.action_start_4']),
-                'add to table error': ('Warning', self.lang['ui.action_start_5']),
-                'run error': ('Critical', self.lang['ui.action_start_7'])
-            }.get(result, None)
-            if message:
-                message_show(*message)
-
-
-class StartWork(QThread):
-    """
-    用于后台执行配置比较的线程类。
-
-    此类继承自 QThread，并在后台执行配置比较操作。它会发出信号以通知主线程比较的结果。
-
-    使用 PyQt 的信号-槽机制来进行线程间的通信。
-    """
-    signal = pyqtSignal(str)
-
-    def __init__(self, table, filter_bar, lang):
-        """
-        初始化配置比较器线程。
-
-        :param table: 表格对象，用于显示比较结果。
-        :type table: QTableWidget
-        :param filter_bar: 过滤栏对象，用于设置过滤条件。
-        :type filter_bar: FilterBar
-        :param lang: 语言字典。
-        :type lang: Dict
-        """
-        super().__init__()
-        self.table = table
-        self.filter_bar = filter_bar
-        self.table_results_manager = TableResultsManager(table, lang)
-        self.config_main, self.config_connection = None, None
-
-    def run(self) -> None:
-        """
-        执行配置比较器线程的主要工作流程。
-
-        此方法包括初始化配置、执行查询、处理查询结果以及处理异常情况等步骤。它在后台执行，不会阻塞主界面的响应。
-        线程完成或出现异常时，会发出信号通知主线程。
-        """
-        try:
-            self._initialize()
-            logger.info(f'Start running')
-            if not self._perform_query():
-                return
-            self._finalize()
-            logger.info(f'Running done')
-            self.signal.emit('done')
-        except Exception:
-            logger.exception('Error occurred during execution')
-            self.signal.emit('run error')
-
-    def _initialize(self):
-        """
-        初始化配置比较器线程。
-
-        此方法会清空表格数据，禁用表格排序，并加载配置信息。它是配置比较过程开始前的准备步骤。
-        """
+        logger.info(f'Start running')
+        # 状态栏发送提示消息
+        self.label_status.setText(self.lang['ui.action_start_3'])
+        # 开始按钮不可点击
+        self.action_start.setEnabled(False)
+        # 禁用表格排序
+        self.table.setSortingEnabled(False)
+        # 禁用表格更新
+        self.table.setUpdatesEnabled(False)
         # 清空表格数据
         self.table.clear()
         # 初始化表宽
         self.table.set_header_resize()
-        # 禁用表格排序，防止展示空数据
-        self.table.setSortingEnabled(False)
-        # 加载配置信息
-        self.config_main, self.config_connection = read_config()
+        logger.debug('Func initialize done')
 
-    def _perform_query(self) -> bool:
+    def table_insert(self, table_rows: List[Tuple]) -> None:
         """
-        执行配置查询操作。
+        向表格中插入行。
 
-        此方法会调用 `start_query` 函数，执行配置查询。如果查询成功，将结果添加到表格中；如果查询失败，发送相应的信号。
-        :return: 查询是否成功。
-        :rtype: bool
+        :param table_rows: 要插入的行数据，每行是一个元组。
+        :type table_rows: List[Tuple]
+        :return: None
         """
-        query_results = start_query(self.config_connection, self.config_main)
-        if not query_results:
-            self.signal.emit('no query result')
-            return False
+        [self.table.add_row(row) for row in table_rows]
 
-        add_to_table_result = self.table_results_manager.add_results_to_table(query_results)
-        if not add_to_table_result:
-            self.signal.emit('add to table error')
-            return False
-
-        return True
-
-    def _finalize(self) -> None:
+    def table_column_hide(self, query_statuses: Dict[str, bool]) -> None:
         """
-        完成配置比较器线程的收尾工作。
+        根据查询状态决定是否隐藏表格的某些列。
 
-        此方法在配置比较完成后执行，包括启动表格排序、更新过滤器等操作。它是配置比较过程结束后的整理步骤。
+        :param query_statuses: 各查询状态的字典，键为状态名，值为布尔值指示是否显示列。
+        :type query_statuses: Dict[str, bool]
+        :return: None
+        """
+        for k, v in query_statuses.items():
+            column_name_mapping = {'PRO_CONFIG': 'pro_value', 'PRE_CONFIG': 'pre_value', 'TEST_CONFIG': 'test_value', 'DEV_CONFIG': 'dev_value'}
+            action = self.table.showColumn if v else self.table.hideColumn
+            action(COL_INFO[column_name_mapping[k]]['col'])
+        logger.debug('Func table_insert and table_column_hide done')
+
+    def finalize(self, color_switch: str) -> None:
+        """
+        完成查询后的收尾工作，包括重新启用表格排序和更新。
+
+        :param color_switch: 指示是否应用颜色的开关。
+        :type color_switch: str
+        :return: None
         """
         # 启动排序
         self.table.setSortingEnabled(True)
@@ -186,67 +136,120 @@ class StartWork(QThread):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         # 更新过滤器，过滤服务中插入值
         self.filter_bar.filter_options_add()
-        # 运行过滤器
-        self.filter_bar.filter_table()
+        # 初始化表格颜色
+        if color_switch == 'ON':
+            logger.debug('Func apply_color_to_table start')
+            self.table.apply_color_to_table(range(self.table.rowCount()))
+        # 启用表格更新
+        self.table.setUpdatesEnabled(True)
 
-
-class TableResultsManager:
-    """
-    用于管理和展示表格结果的类。
-
-    此类提供了添加查询结果到表格、准备表格行数据、以及根据查询状态更新表格列显示或隐藏的功能。
-
-    :param table: 用于显示结果的表格对象。
-    :type table: Table
-    :param lang: 用于国际化的语言字典。
-    :type lang: Dict[str, str]
-    """
-
-    def __init__(self, table, lang):
+    def show_result_message(self, result: str) -> None:
         """
-        初始化类。
+        显示结果消息。
 
-        :param table: 表格对象，用于显示比较结果。
-        :type table: QTableWidget
-        :param lang: 语言字典。
-        :type lang: Dict
+        根据运行结果，显示不同的状态消息或错误信息。
+
+        :param result: 运行结果的描述。
+        :type result: str
+        :return: None
         """
-        self.table = table
+        self.action_start.setEnabled(True)
+        if result == 'done':
+            logger.info(f'Run Complete')
+            return
+        else:
+            self.label_status.setText(self.lang['label_status_error'])
+            message = {
+                'no query result': ('Warning', self.lang['ui.action_start_4']),
+                'prepare table rows failed': ('Warning', self.lang['ui.action_start_6']),
+                'run error': ('Critical', self.lang['ui.action_start_7'])
+            }.get(result)
+            if message:
+                message_show(*message)
+
+
+class StartWork(QThread):
+    """
+    后台线程类，用于执行数据查询和更新 UI 操作。
+
+    该类继承自 `QThread`，在后台执行数据查询和处理任务。通过发射信号与主 UI 线程通信，实现数据的加载和界面的更新。
+
+    :param lang: 提供多语言支持，用于在 UI 上显示不同语言的文本。
+    :type lang: dict
+    """
+    initialize_signal = pyqtSignal()
+    message = pyqtSignal(str)
+    table_insert_signal = pyqtSignal(list)
+    table_column_hide_signal = pyqtSignal(dict)
+    finalize_signal = pyqtSignal(str)
+
+    def __init__(self, lang: dict) -> None:
+        """
+        初始化 `StartWork` 类的实例。
+
+        设置线程的语言参数，用于在后台处理过程中的多语言支持。
+
+        :param lang: 用于多语言支持的语言字典。
+        :type lang: dict
+        :return: None
+        """
+        super().__init__()
         self.lang = lang
 
-    def add_results_to_table(self, query_results: List) -> bool:
+    def run(self) -> None:
         """
-        将查询结果添加到表格中。
+        线程执行的主要方法。
 
-        此方法处理格式化结果和查询状态，然后更新表格内容。
+        在此方法中，执行所有必要的查询操作，并发送信号以更新 UI。
 
-        :param query_results: 包含格式化结果和查询状态的元组。
-        :type query_results: Tuple[Dict, Dict]
-        :return: 是否成功添加到表格。
-        :rtype: bool
+        :return: None
         """
         try:
+            # 开始初始化准备工作
+            self.initialize_signal.emit()
+
+            # 读取配置信息，开始数据库查询
+            config_main, config_connection = read_config()
+            query_results = start_query(config_connection, config_main)
+            logger.debug('Func start_query done')
+            if not query_results:
+                self.message.emit('no query result')
+                return
+
+            # 合成要插入表格的数据
             formatted_results, query_statuses = query_results
-            table_rows = self._prepare_table_rows(formatted_results)
-            self._add_rows_to_table(table_rows)
-            self._update_table_column_hide(query_statuses)
-            return True
+            table_rows = self.prepare_table_rows(formatted_results)
+            logger.debug('Func prepare_table_rows done')
+            if not table_rows:
+                self.message.emit('prepare table rows failed')
+                return
+
+            # 将数据插入到主表格
+            self.table_insert_signal.emit(table_rows)
+            # 隐藏主表格不必要的列
+            self.table_column_hide_signal.emit(query_statuses)
+            if not table_rows:
+                self.message.emit('add to table error')
+                return
+
+            # 收尾工作
+            self.finalize_signal.emit(config_main.get('color_set', 'ON'))
+            self.message.emit('done')
         except Exception:
-            logger.exception('Error occurred during adding results to table')
-            return False
+            logger.exception('Error occurred during execution')
+            self.message.emit('run error')
 
-    def _prepare_table_rows(self, formatted_results: Dict) -> List[List]:
+    def prepare_table_rows(self, formatted_results: Dict[str, Any]) -> List[List]:
         """
-        准备要添加到表格的行数据。
+        准备插入到表格中的数据行。
 
-        根据提供的格式化结果，此方法生成表格所需的行数据列表。
+        此方法将查询结果格式化为表格可以接受的数据结构。
 
         :param formatted_results: 格式化后的查询结果。
-        :type formatted_results: Dict
-        :return: 表格行数据列表。
+        :type formatted_results: Dict[str, Any]
+        :return: 准备好的表格数据行。
         :rtype: List[List]
         """
-        # 定义状态映射
         consistency_status_mapping = {
             "inconsistent": self.lang['ui.action_start_8'],
             "fully": self.lang['ui.action_start_9'],
@@ -256,7 +259,6 @@ class TableResultsManager:
             "no": self.lang['ui.action_start_11'],
             "yes": self.lang['ui.action_start_12']
         }
-
         # 基本键列表
         basic_keys = [
             'app_id', 'namespace_name', 'key',
@@ -275,29 +277,3 @@ class TableResultsManager:
             ]
             for result in formatted_results.values()
         ]
-
-    def _add_rows_to_table(self, table_rows: List[List]):
-        """
-        将行数据添加到表格中。
-
-        遍历提供的行数据列表，将每行数据添加到表格中。
-
-        :param table_rows: 表格行数据列表。
-        :type table_rows: List[List]
-        """
-        for row in table_rows:
-            self.table.add_row(row)
-
-    def _update_table_column_hide(self, query_statuses: Dict):
-        """
-        根据查询状态更新表格列的显示或隐藏。
-
-        根据查询状态字典，决定每列的显示或隐藏。
-
-        :param query_statuses: 包含列名称和状态的字典。
-        :type query_statuses: Dict
-        """
-        column_name_mapping = {'PRO_CONFIG': 'pro_value', 'PRE_CONFIG': 'pre_value', 'TEST_CONFIG': 'test_value', 'DEV_CONFIG': 'dev_value'}
-        for k, v in query_statuses.items():
-            action = self.table.showColumn if v else self.table.hideColumn
-            action(COL_INFO[column_name_mapping[k]]['col'])

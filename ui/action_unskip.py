@@ -12,13 +12,14 @@ import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction, QTableWidgetItem
+from PyQt5.QtWidgets import QAction
 
 from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import CONFIG_SKIP_PATH, COL_INFO
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
+from module.read_config import read_config
 
 logger = logging.getLogger(__name__)
 
@@ -64,32 +65,22 @@ class ActionUnskip:
         """
         try:
             skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
+            config_main, _ = read_config()
+            selected_keys = []
 
             # 重生成过滤列表
-            selected_keys = [self._get_index_key(item) for item in self.table.selectedItems()]
-            skip_list = [f for f in skip_list if f not in selected_keys]
-            write_list_to_file(CONFIG_SKIP_PATH, set(skip_list))
+            for item in self.table.selectedItems():
+                row = item.row()
+                self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "no")
+                self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_11'])
+                selected_keys.append(f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}")
+                if config_main.get('color_set', 'ON') == 'ON':
+                    self.table.apply_color_to_table([row])
 
+            skip_list = [f for f in skip_list if f not in selected_keys]
             self.filter_bar.filter_table()
             self.label_status.setText(self.lang['ui.action_unskip_3'])
+            write_list_to_file(CONFIG_SKIP_PATH, set(skip_list))
         except Exception:
             logger.exception(f"An error occurred during unskip items")
             self.label_status.setText(self.lang['label_status_error'])
-
-    def _get_index_key(self, item: QTableWidgetItem) -> str:
-        """
-        生成并返回表格项的索引键。
-
-        该方法用于从表格项中提取必要信息，并生成一个用于标识该项的唯一索引键。
-
-        :param item: 表格中的一个项目。
-        :type item: QTableWidgetItem
-        :return: 生成的索引键。
-        :rtype: str
-        """
-        row = item.row()
-        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "no")
-        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_11'])
-        return f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}"
-
-
