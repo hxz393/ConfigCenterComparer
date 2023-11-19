@@ -247,7 +247,7 @@ The table header is divided into the following items:
 - **Group**: In Apollo, it's the "Namespace", usually the private namespace is called "application". In Nacos, the field is "Group".
 - **Key**: In Apollo, it's "Key". In Nacos, it's extracted from "Configuration Content", formatted the same as in Apollo.
 - **Value**: By default, divided into four columns for different environments, with the environment names as headers. In Apollo, it's "Value". In Nacos, it's extracted from "Configuration Content".
-- **Modification Time**: By default hidden. Divided into four columns for different environments, indicating the last modification time of the configuration in the corresponding environment.
+- **Modified Time**: By default hidden. Divided into four columns for different environments, indicating the last modification time of the configuration in the corresponding environment.
 - **Consistency**: Divided into four statuses.
   - Fully Consistent: Indicates that all environment configuration values are exactly the same. Requires at least two comparison environments.
   - Partially Consistent: The production environment and preview environment values are equal, but differ from values in other environments.
