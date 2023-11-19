@@ -10,7 +10,7 @@
 
 from typing import Dict, Optional
 
-from config.settings import SQL_CONFIG_NACOS, SQL_CONFIG_APOLLO_ID, SQL_CONFIG_APOLLO_NAME
+from config.settings import SQL_CONFIG_NACOS, SQL_CONFIG_APOLLO_ID, SQL_CONFIG_APOLLO_NAME, APOLLO_NAME_LIST
 import logging
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def get_query_sql(config_main: Dict[str, str]) -> Optional[str]:
 
         if config_center == 'Nacos':
             return SQL_CONFIG_NACOS
-        elif config_center == 'Apollo' and apollo_name in ['AppId', 'Name']:
+        elif config_center == 'Apollo' and apollo_name in APOLLO_NAME_LIST:
             return SQL_CONFIG_APOLLO_ID if apollo_name == 'AppId' else SQL_CONFIG_APOLLO_NAME
         else:
             return None

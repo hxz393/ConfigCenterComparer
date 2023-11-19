@@ -14,7 +14,11 @@ AUTHOR_NAME = 'assassing'
 CONTACT_MAIL = 'hxz393@gmail.com'
 WEBSITE_URL = 'https://blog.x2b.net'
 CHECK_UPDATE_URL = 'https://blog.x2b.net/ver/configcentercomparerversion.txt'
+GITHUB_PROFILE = 'https://github.com/hxz393'
 GITHUB_URL = 'https://github.com/hxz393/ConfigCenterComparer'
+# 设置菜单下拉列表
+CONFIG_CENTER_LIST = ['Apollo', 'Nacos',]
+APOLLO_NAME_LIST = ['AppId', 'Name',]
 # 默认配置
 DEFAULT_CONFIG_MAIN = {
     'lang': 'English',  # zh-cht en zh-chs

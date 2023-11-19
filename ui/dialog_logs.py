@@ -187,9 +187,20 @@ class DialogLogs(QDialog):
         """
         try:
             selected_level = self.combo_box.currentText()
+
+            # 保存当前光标位置
+            current_cursor = self.text_edit.textCursor()
+            current_position = current_cursor.position()
+
+            # 清除并重新加载日志
             self.text_edit.clear()
             logs_content = self._read_logs_file()
             self._process_logs(logs_content, selected_level)
+
+            # 尝试恢复光标到之前的位置
+            new_cursor = self.text_edit.textCursor()
+            new_cursor.setPosition(min(current_position, len(self.text_edit.toPlainText())))
+            self.text_edit.setTextCursor(new_cursor)
         except Exception:
             logger.exception("Error filtering logs")
             self.label_status.setText(self.lang['label_status_error'])

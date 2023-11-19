@@ -19,7 +19,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDialog, QLineEdit, QDialogButtonBox, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QComboBox
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import CONFIG_MAIN_PATH
+from config.lang_dict_all import lang_dict_all
+from config.settings import CONFIG_MAIN_PATH, CONFIG_CENTER_LIST, APOLLO_NAME_LIST
 from lib.get_resource_path import get_resource_path
 from lib.write_dict_to_json import write_dict_to_json
 from module.read_config import read_config
@@ -94,11 +95,11 @@ class DialogSettingsMain(QDialog):
         """
         main_layout = QVBoxLayout()
         # 下拉框：选择语言
-        self.language_combo_box = self._create_combo_box(main_layout, ['English', '中文简体'], self.lang['ui.dialog_settings_main_2'], self.config_main.get('lang', 'English'))
+        self.language_combo_box = self._create_combo_box(main_layout, lang_dict_all.keys(), self.lang['ui.dialog_settings_main_2'], self.config_main.get('lang', 'English'))
         # 下拉框：选择配置中心类型
-        self.config_center_combo_box = self._create_combo_box(main_layout, ['Apollo', 'Nacos'], self.lang['ui.dialog_settings_main_3'], self.config_main.get('config_center', 'Apollo'))
+        self.config_center_combo_box = self._create_combo_box(main_layout, CONFIG_CENTER_LIST, self.lang['ui.dialog_settings_main_3'], self.config_main.get('config_center', 'Apollo'))
         # 下拉框：选择 Apollo 配置服务名字段
-        self.apollo_name_combo_box = self._create_combo_box(main_layout, ['AppId', 'Name'], self.lang['ui.dialog_settings_main_4'], self.config_main.get('apollo_name', 'AppId'))
+        self.apollo_name_combo_box = self._create_combo_box(main_layout, APOLLO_NAME_LIST, self.lang['ui.dialog_settings_main_4'], self.config_main.get('apollo_name', 'AppId'))
 
         main_group = QGroupBox(self.lang['ui.dialog_settings_main_5'])
         main_group.setStyleSheet("QGroupBox { font-weight: bold; text-align: center; }")

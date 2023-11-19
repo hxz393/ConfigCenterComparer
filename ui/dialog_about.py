@@ -10,12 +10,13 @@
 
 import logging
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import Qt, QByteArray, QBuffer, QIODevice
+from PyQt5.QtGui import QIcon, QPixmap, QPainter
+from PyQt5.QtSvg import QSvgRenderer
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QFormLayout, QTextEdit
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import VERSION_INFO, GITHUB_URL, PROGRAM_NAME, WEBSITE_URL, AUTHOR_NAME
+from config.settings import VERSION_INFO, GITHUB_URL, GITHUB_PROFILE, PROGRAM_NAME, WEBSITE_URL, AUTHOR_NAME
 from lib.get_resource_path import get_resource_path
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ class DialogAbout(QDialog):
 
         self.setWindowTitle(self.lang['ui.dialog_about_1'])
         self.setFixedSize(463, 470)
-        self.setWindowIcon(QIcon(get_resource_path('media/icons8-about-26.png')))
+        self.setWindowIcon(QIcon(get_resource_path('media/main.svg')))
         self.setStyleSheet("font-size: 14px;")
 
         self.initUI()
@@ -79,10 +80,7 @@ class DialogAbout(QDialog):
         top_layout = QHBoxLayout()
         top_layout.setContentsMargins(0, 0, 0, 0)
         # 程序图标
-        image = QLabel()
-        image.setContentsMargins(20, 10, 20, 10)
-        image.setPixmap(QPixmap(get_resource_path("media/main.ico")))
-        top_layout.addWidget(image)
+        top_layout.addWidget(self._clickable_image())
         # 名称和版本信息
         top_layout.addLayout(self._title_and_version())
         top_layout.addStretch()
@@ -92,6 +90,41 @@ class DialogAbout(QDialog):
         widget.setLayout(top_layout)
 
         return widget
+
+    @staticmethod
+    def _clickable_image() -> QLabel:
+        """
+        创建图片组件，用于存放处理过的 SVG 图像。
+
+        :return: 包含程序大图标。
+        :rtype: QLabel
+        """
+        # 创建 QLabel 用于显示图像
+        image_label = QLabel()
+        image_label.setContentsMargins(20, 10, 10, 10)
+
+        # 加载 SVG 文件并调整大小
+        svgRenderer = QSvgRenderer(get_resource_path("media/main.svg"))
+        pixmap = QPixmap(96, 96)
+        pixmap.fill(Qt.transparent)
+        painter = QPainter(pixmap)
+        svgRenderer.render(painter)
+        painter.end()
+
+        # 将 pixmap 转换为 base64 编码的字符串
+        byte_array = QByteArray()
+        buffer = QBuffer(byte_array)
+        buffer.open(QIODevice.WriteOnly)
+        pixmap.save(buffer, "PNG")
+        base64_data = byte_array.toBase64().data().decode()
+
+        # 设置 HTML 链接和图像
+        html = f"<a href='{GITHUB_PROFILE}'><img src='data:image/png;base64,{base64_data}' /></a>"
+        image_label.setText(html)
+        image_label.setTextFormat(Qt.RichText)
+        image_label.setOpenExternalLinks(True)
+
+        return image_label
 
     def _title_and_version(self) -> QVBoxLayout:
         """

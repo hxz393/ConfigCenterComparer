@@ -4,10 +4,10 @@
 lang_dict_all = {
     'English': {
         'main_1': 'Ready',
-        'main_2': '&Start',
-        'main_3': '&Edit',
-        'main_4': '&Options',
-        'main_5': '&Help',
+        'main_2': '  &Start ',
+        'main_3': '  &Edit  ',
+        'main_4': ' &Options',
+        'main_5': '  &Help  ',
         'main_6': 'Toolbar',
         'label_status_error': 'Error occurred',
         'ui.action_exit_1': 'Quit',
@@ -117,33 +117,33 @@ lang_dict_all = {
         'ui.dialog_about_1': 'About',
         'ui.dialog_about_2': 'Configuration Center Comparison Tool',
         'ui.dialog_about_3': 'Version: ',
-        'ui.dialog_about_4': 'Author:',
-        'ui.dialog_about_5': 'Website:',
+        'ui.dialog_about_4': 'Author  :',
+        'ui.dialog_about_5': 'Website :',
         'ui.dialog_about_6': 'Homepage:',
         'ui.dialog_about_7': """
-        <p style="text-align: center; font-size: 16px; font-weight: bold;">Introduction</p>
-        <p style="text-align: justify;">
-        &nbsp;&nbsp;This is a specialized comparison tool for configuration centers, capable of comparing configurations across different clusters, with a basic filtering and search functionality.
-        </p>
-        <p style="text-align: justify;">
-        &nbsp;&nbsp;Currently supported configuration centers and versions:
-        </p>
-        <p><b>&nbsp;&nbsp;Apollo：</b>2.0.0, 2.1.0</p>
-        <p><b>&nbsp;&nbsp;Nacos：</b>v2.1.0</p>
-
-        <p style="text-align: center; font-size: 16px; font-weight: bold;">Getting Help</p>
-        <p style="text-align: justify;">
-        &nbsp;&nbsp;Please refer to the project homepage or website for usage instructions before running. If you encounter errors during use, first check the logs for troubleshooting. For bugs and suggestions, please submit an issue on the project homepage.<br>
-        </p>
-
-        <p style="text-align: center; font-size: 16px; font-weight: bold;">Build Tools</p>
-        <p style="text-align: justify;">
-        &nbsp;&nbsp;ConfigCenterComparer was built using the following tools:
-        </p>
-        <p><b>&nbsp;&nbsp;Program：</b>Python 3.10.4</p>
-        <p><b>&nbsp;&nbsp;Interface：</b>PyQT 5.15.8</p>
-        <p><b>&nbsp;&nbsp;Icons：</b><a href='https://icons8.com/'>icons8.com</a></p>
-        """
+                <p style="text-align: center; font-size: 16px; font-weight: bold;">Introduction</p>
+                <p style="text-align: justify;">
+                &nbsp;&nbsp;This is a specialized comparison tool for configuration centers, capable of comparing configurations across different clusters, with a basic filtering and search functionality.
+                </p>
+                <p style="text-align: justify;">
+                &nbsp;&nbsp;Currently supported configuration centers and versions:
+                </p>
+                <p><b>&nbsp;&nbsp;Apollo：</b>2.0.0, 2.1.0</p>
+                <p><b>&nbsp;&nbsp;Nacos：</b>v2.1.0</p>
+                
+                <p style="text-align: center; font-size: 16px; font-weight: bold;">Getting Help</p>
+                <p style="text-align: justify;">
+                &nbsp;&nbsp;Please refer to the project homepage or website for usage instructions before running. If you encounter errors during use, first check the logs for troubleshooting. For bugs and suggestions, please submit an issue on the project homepage.<br>
+                </p>
+                
+                <p style="text-align: center; font-size: 16px; font-weight: bold;">Build Tools</p>
+                <p style="text-align: justify;">
+                &nbsp;&nbsp;ConfigCenterComparer was built using the following tools:
+                </p>
+                <p><b>&nbsp;&nbsp;Program：</b>Python 3.10.4</p>
+                <p><b>&nbsp;&nbsp;Interface：</b>PyQT 5.15.8</p>
+                <p><b>&nbsp;&nbsp;Icons：</b><a href='https://icons8.com/'>icons8.com</a></p>
+                """
     },
     '中文简体': {
         'main_1': '准备就绪',

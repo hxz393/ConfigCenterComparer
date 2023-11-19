@@ -104,6 +104,7 @@ class ConfigCenterComparer(QMainWindow):
         此方法用于创建和配置程序的菜单栏，包括运行、编辑、选项和帮助等菜单。
         """
         menubar = self.menuBar()
+
         menu_run = menubar.addMenu(self.lang['main_2'])
         menu_run.addAction(self.ActionStart.action_start)
         menu_run.addAction(self.ActionTest.action_test)
@@ -148,8 +149,6 @@ class ConfigCenterComparer(QMainWindow):
         toolbar.addAction(self.ActionSettingConnection.action_setting)
         toolbar.addSeparator()
         toolbar.addAction(self.ActionLogs.action_logs)
-        toolbar.addAction(self.ActionUpdate.action_update)
-        toolbar.addAction(self.ActionAbout.action_about)
         toolbar.addAction(self.ActionExit.action_exit)
 
     def _configure_main_window(self) -> None:
@@ -162,7 +161,7 @@ class ConfigCenterComparer(QMainWindow):
         self.setGeometry(10, 10, 1280, 720)
         self.setMinimumSize(1280, 720)
         self.setWindowTitle(PROGRAM_NAME)
-        self.setWindowIcon(QIcon(get_resource_path('media/main.ico')))
+        self.setWindowIcon(QIcon(get_resource_path('media/main.svg')))
 
         # 创建垂直布局，加入表格和过滤器布局
         self.central_widget = QWidget()
