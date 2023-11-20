@@ -126,8 +126,9 @@ class StartWork(QThread):
         线程完成或出现异常时，会发出信号通知主线程。
         """
         try:
-            self._initialize()
             logger.info(f'Start running')
+            self._initialize()
+            logger.debug(f'Func _initialize done')
             if not self._perform_query():
                 return
             self._finalize()
@@ -161,11 +162,13 @@ class StartWork(QThread):
         :rtype: bool
         """
         query_results = start_query(self.config_connection, self.config_main)
+        logger.debug(f'Func start_query done')
         if not query_results:
             self.signal.emit('no query result')
             return False
 
         add_to_table_result = self.table_results_manager.add_results_to_table(query_results)
+        logger.debug(f'Func add_to_table_result done')
         if not add_to_table_result:
             self.signal.emit('add to table error')
             return False
@@ -184,10 +187,13 @@ class StartWork(QThread):
         self.table.sortByColumn(0, Qt.AscendingOrder)
         # 允许用户调整列宽
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        # 重置过滤器
+        self.filter_bar.filter_reset()
         # 更新过滤器，过滤服务中插入值
         self.filter_bar.filter_options_add()
-        # 运行过滤器
-        self.filter_bar.filter_table()
+        # 初始化表格颜色
+        logger.debug(f'Func apply_color_to_table start')
+        self.table.apply_color_to_table(range(self.table.rowCount()))
 
 
 class TableResultsManager:
