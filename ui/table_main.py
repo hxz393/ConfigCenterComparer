@@ -18,7 +18,7 @@ from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QMenu, QAction, QHeaderView
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import COL_INFO
+from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_DEFAULT, COLOR_EMPTY
 
 logger = logging.getLogger(__name__)
 
@@ -214,6 +214,39 @@ class TableMain(QTableWidget):
         except Exception:
             logger.exception("Error occurred while adding a new row")
             self.removeRow(row_position)
+
+    def apply_color_to_table(self, rows: List[int]) -> None:
+        """
+        根据一致性和跳过状态给表格行应用颜色。
+
+        :param rows: 要应用颜色的行号列表。
+        :type rows: List[int]
+        """
+        try:
+            for row in rows:
+                consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
+                skip_data = self.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
+
+                # 忽略状态为是时设置颜色
+                if skip_data == 'yes':
+                    self.apply_color(row, COLOR_SKIP)
+                    continue
+
+                # 根据一致性值设置颜色
+                if consistency_data == 'fully':
+                    self.apply_color(row, COLOR_CONSISTENCY_FULLY)
+                elif consistency_data == 'partially':
+                    self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
+                else:
+                    self.apply_color(row, COLOR_DEFAULT)
+
+                # 遍历指定列检查空值
+                for column in range(self.columnCount()):
+                    if self.item(row, column).text() == 'None':
+                        self.apply_color(row, COLOR_EMPTY, column)
+        except Exception:
+            logger.exception("Exception in apply_color_to_table method")
+            self.label_status.setText(self.lang['label_status_error'])
 
     def apply_color(self, row: int, color: str, column: Optional[int] = None) -> None:
         """
