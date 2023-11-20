@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import QDialog, QLineEdit, QDialogButtonBox, QHBoxLayout, Q
 
 from ConfigCenterComparer import ConfigCenterComparer
 from config.lang_dict_all import lang_dict_all
-from config.settings import CONFIG_MAIN_PATH, CONFIG_CENTER_LIST, APOLLO_NAME_LIST
+from config.settings import CONFIG_MAIN_PATH, CONFIG_CENTER_LIST, APOLLO_NAME_LIST, COLOR_SET_LIST
 from lib.get_resource_path import get_resource_path
 from lib.write_dict_to_json import write_dict_to_json
 from module.read_config import read_config
@@ -100,6 +100,8 @@ class DialogSettingsMain(QDialog):
         self.config_center_combo_box = self._create_combo_box(main_layout, CONFIG_CENTER_LIST, self.lang['ui.dialog_settings_main_3'], self.config_main.get('config_center', 'Apollo'))
         # 下拉框：选择 Apollo 配置服务名字段
         self.apollo_name_combo_box = self._create_combo_box(main_layout, APOLLO_NAME_LIST, self.lang['ui.dialog_settings_main_4'], self.config_main.get('apollo_name', 'AppId'))
+        # 下拉框：选择颜色开关
+        self.color_set_combo_box = self._create_combo_box(main_layout, COLOR_SET_LIST, self.lang['ui.dialog_settings_main_16'], self.config_main.get('color_set', 'ON'))
 
         main_group = QGroupBox(self.lang['ui.dialog_settings_main_5'])
         main_group.setStyleSheet("QGroupBox { font-weight: bold; text-align: center; }")
@@ -235,6 +237,7 @@ class DialogSettingsMain(QDialog):
         self.config_main['lang'] = self.language_combo_box.currentText()
         self.config_main['config_center'] = self.config_center_combo_box.currentText()
         self.config_main['apollo_name'] = self.apollo_name_combo_box.currentText()
+        self.config_main['color_set'] = self.color_set_combo_box.currentText()
         self.config_main['fix_name_left'] = self.fix_name_left.text()
         self.config_main['fix_name_right'] = self.fix_name_right.text()
 

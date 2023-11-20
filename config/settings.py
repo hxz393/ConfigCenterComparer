@@ -19,11 +19,13 @@ GITHUB_URL = 'https://github.com/hxz393/ConfigCenterComparer'
 # 设置菜单下拉列表
 CONFIG_CENTER_LIST = ['Apollo', 'Nacos',]
 APOLLO_NAME_LIST = ['AppId', 'Name',]
+COLOR_SET_LIST = ['ON', 'OFF',]
 # 默认配置
 DEFAULT_CONFIG_MAIN = {
     'lang': 'English',  # zh-cht en zh-chs
     'config_center': 'Apollo',
     'apollo_name': 'AppId',
+    'color_set': 'ON',
     'fix_name_before': '',
     'fix_name_after': '',
     'fix_name_left': '',
