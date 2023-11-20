@@ -15,7 +15,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QCheckBox, QFrame, QWidget, QSizePolicy
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import COL_INFO, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_DEFAULT, COLOR_EMPTY, COLOR_SKIP
+from config.settings import COL_INFO, COLOR_HIGHLIGHT
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,8 @@ class FilterBar(QWidget):
         self.table = self.main_window.get_elements('table')
         self.label_status = self.main_window.get_elements('label_status')
         self.lang = self.main_window.get_elements('lang')
+        # 用于还原样式
+        self.original_styles = {}
 
         self._setup_filters()
 
@@ -190,13 +192,17 @@ class FilterBar(QWidget):
         此方法将所有过滤组件重置为默认状态，以便用户可以重新开始过滤操作。
         """
         try:
+            # 重置单元格颜色
+            self.reset_styles()
             # 重置 QComboBox 为第一个项，通常是 "--显示所有--"
             self.filter_app_box.setCurrentIndex(0)
             self.filter_table_box.setCurrentIndex(0)
             # 清空搜索框 QLineEdit
             self.filter_value_box.clear()
-            # 重新应用过滤器以显示所有行
-            self.filter_table()
+            # 显示所有行
+            [self.table.setRowHidden(row, False) for row in range(self.table.rowCount())]
+            # 更新状态栏信息为过滤后的行数
+            self.label_status.setText(f"{self.table.rowCount()} {self.lang['ui.filter_bar_11']}")
         except Exception:
             logger.exception("Error occurred while resetting filters")
             self.label_status.setText(self.lang['label_status_error'])
@@ -210,13 +216,14 @@ class FilterBar(QWidget):
         try:
             # 计算可见的行数
             visible_rows = 0
+            # 在新的搜索开始之前，遍历 self.original_styles，恢复每个单元格的原始样式。
+            self.reset_styles()
 
             for row in range(self.table.rowCount()):
                 consistency_data = self.table.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
                 skip_data = self.table.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
                 name_data = self.table.item(row, COL_INFO['name']['col']).text()
-                # 给表格着色
-                self._filter_apply_color(row, consistency_data, skip_data)
+
                 # 匹配选择所有或者选择服务名时为True
                 app_match = self._get_app_match(name_data)
                 # 匹配过滤条件时为True
@@ -233,34 +240,6 @@ class FilterBar(QWidget):
         except Exception:
             logger.exception("Exception in filter_table method")
             self.label_status.setText(self.lang['label_status_error'])
-
-    def _filter_apply_color(self, row: int, consistency_data: str, skip_data: str) -> None:
-        """
-        根据一致性和跳过状态给表格行应用颜色。
-
-        :param row: 表格中的行号。
-        :type row: int
-        :param consistency_data: 一致性状态数据，如 'fully', 'partially'。
-        :type consistency_data: str
-        :param skip_data: 跳过状态数据，如 'yes' 或 'no'。
-        :type skip_data: str
-        """
-        # 根据一致性值设置颜色
-        if consistency_data == 'fully':
-            self.table.apply_color(row, COLOR_CONSISTENCY_FULLY)
-        elif consistency_data == 'partially':
-            self.table.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
-        else:
-            self.table.apply_color(row, COLOR_DEFAULT)
-
-        # 遍历每列检查空值
-        for column in range(self.table.columnCount()):
-            if self.table.item(row, column).text() == 'None':
-                self.table.apply_color(row, COLOR_EMPTY, column)
-
-        # 忽略状态为是时设置颜色
-        if skip_data == 'yes':
-            self.table.apply_color(row, COLOR_SKIP)
 
     def _get_app_match(self, name_data: str) -> bool:
         """
@@ -315,6 +294,7 @@ class FilterBar(QWidget):
         :return: 如果当前行包含搜索框中的文本，则返回 True。
         :rtype: bool
         """
+
         search_value = self.filter_value_box.text().strip().lower()
         # 如果搜索值为空，则无需进行搜索
         if not search_value:
@@ -326,8 +306,24 @@ class FilterBar(QWidget):
                 item = self.table.item(row, column)
                 item_text = item.text().lower() if item else ''
                 row_text += item_text + ' '
-                # 检查每个单元格是否包含搜索值，并应用颜色
                 if search_value in item_text:
-                    self.table.apply_color(row, '#ffff66', column)
+                    if (row, column) not in self.original_styles:
+                        # 存储颜色
+                        self.original_styles[(row, column)] = item.background() if item else None
+                    # 修改背景颜色
+                    self.table.apply_color(row, COLOR_HIGHLIGHT, column)
 
         return search_value in row_text
+
+    def reset_styles(self):
+        """
+        重置表格样式到原始状态。
+        """
+        try:
+            for (row, column), color in self.original_styles.items():
+                item = self.table.item(row, column)
+                if item:  # 确保表格项存在
+                    item.setBackground(color)
+            self.original_styles.clear()
+        except Exception:
+            logger.exception("Error occurred while resetting styles")
