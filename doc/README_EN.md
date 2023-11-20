@@ -165,6 +165,10 @@ The explanations for each configuration item are as follows:
 
   Effective when the configuration center type is set to "Apollo". It sets which database field to use as the service name display field. Dropdown options "AppId" and "Name" correspond to the "AppId" and "Application Name" in Apollo's "Application Information".
 
+- **Table Color Switch**
+
+  If the number of configuration entries exceeds ten thousand, you can turn off the display of table colors to significantly improve execution speed.
+
 - **Replace Service Name**
 
   - Enter the "original name" and "new name" in the input box to completely replace the service name. This is usually used for aligning service names across different environments. For example, if the AppId in the development environment is "1025" and the AppId in other environments is "api-web", replacing 1025 with api-web allows for comparing configurations of api-web in the program.
@@ -348,6 +352,19 @@ When encountering errors in software operation, first check the logs. If it's a 
 # Update Log
 
 To avoid an overly lengthy update log, only the most recent updates are retained.
+
+## Version 1.0.2 (2023.11.21)
+
+Features:
+
+1. Added a table color switch to address performance degradation due to large data volumes.
+
+Updates:
+
+1. Modified color application logic to improve execution speed;
+2. Optimized main thread code to enhance UI stability.
+
+
 
 ## Version 1.0.1 (2023.11.19)
 
