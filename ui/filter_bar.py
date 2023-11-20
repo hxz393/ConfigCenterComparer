@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButt
 
 from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import COL_INFO, COLOR_HIGHLIGHT
+from module.read_config import read_config
 
 logger = logging.getLogger(__name__)
 
@@ -294,7 +295,7 @@ class FilterBar(QWidget):
         :return: 如果当前行包含搜索框中的文本，则返回 True。
         :rtype: bool
         """
-
+        self.config_main, self._ = read_config()
         search_value = self.filter_value_box.text().strip().lower()
         # 如果搜索值为空，则无需进行搜索
         if not search_value:
@@ -306,7 +307,8 @@ class FilterBar(QWidget):
                 item = self.table.item(row, column)
                 item_text = item.text().lower() if item else ''
                 row_text += item_text + ' '
-                if search_value in item_text:
+
+                if self.config_main.get('color_set', 'ON') == 'ON' and search_value in item_text:
                     if (row, column) not in self.original_styles:
                         # 存储颜色
                         self.original_styles[(row, column)] = item.background() if item else None
