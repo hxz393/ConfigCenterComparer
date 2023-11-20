@@ -349,6 +349,15 @@ When encountering errors in software operation, first check the logs. If it's a 
 
 To avoid an overly lengthy update log, only the most recent updates are retained.
 
+## Version 1.0.1 (2023.11.19)
+
+Updates:
+
+1. Clear filter bar conditions before starting the run to prevent the interface from freezing when running again;
+2. Optimize the text displayed in logs.
+
+
+
 ## Version 1.0.0 (2023.11.19)
 
 First release.

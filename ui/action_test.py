@@ -116,7 +116,7 @@ class TestRun(QThread):
             logger.info(f'Start running test')
             _, config_connection = read_config()
             test_result = test_connection(config_connection)
-            logger.info(f'Testing done.')
+            logger.info(f'Test Completed')
         except Exception:
             logger.exception(f'Error during testing')
             test_result = None
