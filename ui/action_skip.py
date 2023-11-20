@@ -89,4 +89,5 @@ class ActionSkip:
         row = item.row()
         self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "yes")
         self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])
+        self.table.apply_color_to_table([row])
         return f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}"
