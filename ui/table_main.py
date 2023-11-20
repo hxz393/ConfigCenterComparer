@@ -260,9 +260,17 @@ class TableMain(QTableWidget):
         此方法用于清除表格中的所有数据，通常在数据更新或重置时使用。
         """
         try:
-            row_count = self.rowCount()
-            for i in range(row_count)[::-1]:
-                self.removeRow(i)
-        except Exception:
-            logger.exception("Error occurred while clearing the table")
+            # 禁用更新以提高性能
+            self.setUpdatesEnabled(False)
+            # 首先清除所有单元格的内容
+            self.clearContents()
+            # 接着删除所有行
+            while self.rowCount() > 0:
+                self.removeRow(0)
+            # 重新启用更新
+            self.setUpdatesEnabled(True)
+        except Exception as e:
+            logger.exception("Error occurred while clearing the table: {}".format(str(e)))
             self.label_status.setText(self.lang['label_status_error'])
+            # 确保即使发生错误也要重新启用更新
+            self.setUpdatesEnabled(True)

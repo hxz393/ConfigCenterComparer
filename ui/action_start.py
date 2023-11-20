@@ -143,8 +143,6 @@ class StartWork(QThread):
 
         此方法会清空表格数据，禁用表格排序，并加载配置信息。它是配置比较过程开始前的准备步骤。
         """
-        # 清空过滤条件
-        self.filter_bar.filter_reset()
         # 清空表格数据
         self.table.clear()
         # 初始化表宽
