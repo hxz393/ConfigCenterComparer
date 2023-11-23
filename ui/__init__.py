@@ -18,3 +18,7 @@ from .filter_bar import FilterBar
 from .message_show import message_show
 from .message_restart import message_restart
 from .table_main import TableMain
+from .dialog_settings_main import DialogSettingsMain
+from .dialog_settings_connection import DialogSettingsConnection
+from .dialog_about import DialogAbout
+from .dialog_logs import DialogLogs

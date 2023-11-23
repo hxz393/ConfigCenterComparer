@@ -20,12 +20,10 @@ from module.modify_name import modify_name
 logger = logging.getLogger(__name__)
 
 
-def format_query_results(
-        query_results: Union[Tuple[Tuple[str, str, str, str, datetime.datetime], ...], Tuple[Tuple[str, str, str, datetime.datetime], ...]],
-        env_name: str,
-        config_main: Dict[str, str],
-        formatted_results: Dict[str, Dict[str, str]]
-) -> None:
+def format_query_results(query_results: Union[Tuple[Tuple[str, str, str, str, datetime.datetime], ...], Tuple[Tuple[str, str, str, datetime.datetime], ...]],
+                         env_name: str,
+                         config_main: Dict[str, str],
+                         formatted_results: Dict[str, Dict[str, str]]) -> None:
     """
     格式化查询结果，并根据不同的配置中心处理它们。
 

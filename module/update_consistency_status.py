@@ -16,10 +16,8 @@ from module.determine_consistency_status import determine_consistency_status
 logger = logging.getLogger(__name__)
 
 
-def update_consistency_status(
-        formatted_results: Dict[str, Dict[str, str]],
-        query_statuses: Dict[str, bool]
-) -> None:
+def update_consistency_status(formatted_results: Dict[str, Dict[str, str]],
+                              query_statuses: Dict[str, bool]) -> None:
     """
     根据数据库查询结果和一致性规则来更新配置项的一致性状态。
 

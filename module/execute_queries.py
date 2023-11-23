@@ -21,13 +21,8 @@ from module.update_skip_status import update_skip_status
 logger = logging.getLogger(__name__)
 
 
-def execute_queries(
-        config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]],
-        config_main: Dict[str, str]
-) -> Tuple[
-    Dict[str, Dict[str, str]],
-    Dict[str, bool]
-]:
+def execute_queries(config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]],
+                    config_main: Dict[str, str]) -> Tuple[Dict[str, Dict[str, str]], Dict[str, bool]]:
     """
     执行数据库查询并返回格式化后的结果和查询状态。
 

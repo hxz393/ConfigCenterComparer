@@ -1,11 +1,7 @@
 """
-这是一个包含类 ActionExit 的 Python 文件，用于在 PyQt5 应用程序中处理退出操作。
+本模块提供了一个用于创建和管理退出动作的类 ActionExit，主要用于 PyQt5 应用程序中。
 
-ActionExit 类定义了应用程序的退出动作。它主要用于创建一个 QAction，当触发时，会执行应用程序的退出操作。这个类接收一个 ConfigCenterComparer 实例作为主窗口，以便于访问和操作界面元素。它定义了退出操作的具体逻辑，并在执行过程中处理可能出现的异常。
-
-类的 `__init__` 方法初始化 ActionExit 实例，设置动作的属性，并连接到退出操作。`exit` 方法定义了退出操作的具体实现，它尝试退出应用程序，并在出现异常时记录错误信息。
-
-这个模块主要用于在基于 PyQt5 的界面中集成和处理退出动作，是界面用户交互的重要组成部分。
+该模块定义了 ActionExit 类，用于在 PyQt5 应用程序中创建一个退出动作。该类继承自 QObject，并且通过信号与槽机制实现了语言更新功能。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -14,39 +10,53 @@ ActionExit 类定义了应用程序的退出动作。它主要用于创建一个
 
 import logging
 
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, pyqtSignal, QObject
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 
-from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
+from ui.lang_manager import LangManager
 
 logger = logging.getLogger(__name__)
 
 
-class ActionExit:
+class ActionExit(QObject):
     """
-    定义一个退出动作的类，用于处理程序的退出操作。
+    这个类提供了一个退出动作的创建和管理。
 
-    :type main_window: ConfigCenterComparer
-    :param main_window: 主窗口对象，用于访问和操作界面元素。
+    :param lang_manager: 语言管理器，用于更新动作的显示语言。
+    :type lang_manager: LangManager
     """
+    status_updated = pyqtSignal(str)
 
-    def __init__(self, main_window: ConfigCenterComparer):
+    def __init__(self, lang_manager: LangManager):
+        super().__init__()
+        self.lang_manager = lang_manager
+        self.lang_manager.lang_updated.connect(self.update_lang)
+        self.initUI()
+
+    def initUI(self) -> None:
         """
-        初始化 ActionExit 类的实例。
+        初始化用户界面组件。
 
-        :param main_window: 主窗口对象。
-        :type main_window: ConfigCenterComparer
+        :rtype: None
+        :return: 无返回值。
         """
-        self.main_window = main_window
-        self.label_status = self.main_window.get_elements('label_status')
-        self.lang = self.main_window.get_elements('lang')
-
-        self.action_exit = QAction(QIcon(get_resource_path('media/icons8-exit-26.png')), self.lang['ui.action_exit_1'], main_window)
+        self.action_exit = QAction(QIcon(get_resource_path('media/icons8-exit-26.png')), 'Exit')
         self.action_exit.setShortcut('Ctrl+Q')
-        self.action_exit.setStatusTip(self.lang['ui.action_exit_2'])
         self.action_exit.triggered.connect(self.exit)
+        self.update_lang()
+
+    def update_lang(self) -> None:
+        """
+        更新界面语言设置。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.lang = self.lang_manager.get_lang()
+        self.action_exit.setText(self.lang['ui.action_exit_1'])
+        self.action_exit.setStatusTip(self.lang['ui.action_exit_2'])
 
     def exit(self) -> None:
         """
@@ -58,5 +68,5 @@ class ActionExit:
         try:
             QCoreApplication.quit()
         except Exception:
-            logger.exception(f"Exiting application error")
-            self.label_status.setText(self.lang['label_status_error'])
+            logger.exception("Exiting application error")
+            self.status_updated.emit(self.lang['label_status_error'])

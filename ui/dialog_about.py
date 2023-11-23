@@ -1,7 +1,7 @@
 """
-这是一个用于显示软件相关信息的对话框模块。
+本文件定义了一个关于对话框的类 `DialogAbout`，用于在 PyQt5 框架中显示关于程序的信息。
 
-此模块包含一个 `DialogAbout` 类，用于创建并显示关于软件的信息，如版本号、作者、网址链接等。它通过 PyQt5 构建用户界面，提供一个图形化的方式来展示软件信息。
+该类包括初始化界面、更新语言设置、创建顶部、中间、底部区域等方法。通过这些方法，可以构建一个包含程序信息、版本号、作者信息等的对话框。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -15,60 +15,47 @@ from PyQt5.QtGui import QIcon, QPixmap, QPainter
 from PyQt5.QtSvg import QSvgRenderer
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QFormLayout, QTextEdit
 
-from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import VERSION_INFO, GITHUB_URL, GITHUB_PROFILE, PROGRAM_NAME, WEBSITE_URL, AUTHOR_NAME
 from lib.get_resource_path import get_resource_path
+from ui.lang_manager import LangManager
 
 logger = logging.getLogger(__name__)
 
 
 class DialogAbout(QDialog):
     """
-    创建并显示关于软件的信息对话框。
+    `DialogAbout` 类用于创建关于对话框，展示程序的相关信息。
 
-    此类使用 PyQt5 构建用户界面，展示软件名称、版本、作者信息等。
-
-    :param main_window: 主窗口对象，用于获取语言和状态栏信息。
-    :type main_window: ConfigCenterComparer
+    :param lang_manager: 语言管理器，用于更新动作的显示语言。
+    :type lang_manager: LangManager
     """
 
-    def __init__(self, main_window: ConfigCenterComparer):
-        """
-        初始化对话框，并设置基本属性。
-
-        :param main_window: 主窗口对象，用于获取语言和状态栏信息。
-        :type main_window: ConfigCenterComparer
-        """
+    def __init__(self, lang_manager: LangManager):
         super().__init__(flags=Qt.Dialog | Qt.WindowCloseButtonHint)
-        self.main_window = main_window
-        self.lang = self.main_window.get_elements('lang')
-        self.label_status = self.main_window.get_elements('label_status')
+        self.lang_manager = lang_manager
+        self.lang = self.lang_manager.get_lang()
+        self.initUI()
 
+    def initUI(self) -> None:
+        """
+        初始化用户界面组件。
+
+        :rtype: None
+        :return: 无返回值。
+        """
         self.setWindowTitle(self.lang['ui.dialog_about_1'])
         self.setFixedSize(463, 470)
         self.setWindowIcon(QIcon(get_resource_path('media/main.svg')))
         self.setStyleSheet("font-size: 14px;")
+        # 竖向布局
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        # 构建显示区域
+        layout.addWidget(self._create_top_area())
+        layout.addLayout(self._create_middle_area())
+        layout.addWidget(self._create_bottom_area())
 
-        self.initUI()
-
-    def initUI(self):
-        """
-        初始化用户界面组件。
-
-        创建对话框中的所有UI元素，并进行布局。
-        """
-        try:
-            layout = QVBoxLayout()
-            layout.setContentsMargins(0, 0, 0, 0)
-            # 构建显示区域
-            layout.addWidget(self._create_top_area())
-            layout.addLayout(self._create_middle_area())
-            layout.addWidget(self._create_bottom_area())
-
-            self.setLayout(layout)
-        except Exception:
-            logger.exception(f"Failed to initialize DialogAbout")
-            self.label_status.setText(self.lang['label_status_error'])
+        self.setLayout(layout)
 
     def _create_top_area(self) -> QWidget:
         """
@@ -77,17 +64,18 @@ class DialogAbout(QDialog):
         :return: 包含顶部区域的QWidget对象。
         :rtype: QWidget
         """
-        top_layout = QHBoxLayout()
-        top_layout.setContentsMargins(0, 0, 0, 0)
+        # 横向布局
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         # 程序图标
-        top_layout.addWidget(self._clickable_image())
+        layout.addWidget(self._clickable_image())
         # 名称和版本信息
-        top_layout.addLayout(self._title_and_version())
-        top_layout.addStretch()
+        layout.addLayout(self._title_and_version())
+        layout.addStretch()
         # 设置背景颜色
         widget = QWidget()
         widget.setStyleSheet("background-color: white;")
-        widget.setLayout(top_layout)
+        widget.setLayout(layout)
 
         return widget
 
@@ -100,15 +88,14 @@ class DialogAbout(QDialog):
         :rtype: QLabel
         """
         # 创建 QLabel 用于显示图像
-        image_label = QLabel()
-        image_label.setContentsMargins(20, 10, 10, 10)
+        label = QLabel()
+        label.setContentsMargins(20, 10, 10, 10)
 
         # 加载 SVG 文件并调整大小
-        svgRenderer = QSvgRenderer(get_resource_path("media/main.svg"))
         pixmap = QPixmap(96, 96)
         pixmap.fill(Qt.transparent)
         painter = QPainter(pixmap)
-        svgRenderer.render(painter)
+        QSvgRenderer(get_resource_path("media/main.svg")).render(painter)
         painter.end()
 
         # 将 pixmap 转换为 base64 编码的字符串
@@ -120,11 +107,11 @@ class DialogAbout(QDialog):
 
         # 设置 HTML 链接和图像
         html = f"<a href='{GITHUB_PROFILE}'><img src='data:image/png;base64,{base64_data}' /></a>"
-        image_label.setText(html)
-        image_label.setTextFormat(Qt.RichText)
-        image_label.setOpenExternalLinks(True)
+        label.setText(html)
+        label.setTextFormat(Qt.RichText)
+        label.setOpenExternalLinks(True)
 
-        return image_label
+        return label
 
     def _title_and_version(self) -> QVBoxLayout:
         """
@@ -133,6 +120,7 @@ class DialogAbout(QDialog):
         :return: 包含标题和版本信息的QVBoxLayout对象。
         :rtype: QVBoxLayout
         """
+        # 竖向布局
         layout = QVBoxLayout()
         # 大标题
         title = QLabel(PROGRAM_NAME)
@@ -170,8 +158,10 @@ class DialogAbout(QDialog):
         layout.setSpacing(10)
         # 插入表单
         for k, v in infos.items():
+            # 左列标题
             title = QLabel(k)
             title.setStyleSheet("font-weight: bold;")
+            # 右列信息，超链接
             info = QLabel(f"<a href='{v}'>{v}</a>")
             info.setTextFormat(Qt.RichText)
             info.setTextInteractionFlags(Qt.TextBrowserInteraction)

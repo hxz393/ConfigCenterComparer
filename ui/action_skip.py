@@ -19,7 +19,6 @@ from config.settings import CONFIG_SKIP_PATH, COL_INFO
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
-from module.read_config import read_config
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +62,12 @@ class ActionSkip:
         :return: 无返回值。
         :rtype: None
         """
+        config_main = self.main_window.get_elements('config_main')
+        config_connection = self.main_window.get_elements('config_connection')
+
         try:
             # 读取配置和忽略列表
             skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
-            config_main, config_connection = read_config()
 
             # 更新忽略列表并写入文件
             for item in self.table.selectedItems():

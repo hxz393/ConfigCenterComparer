@@ -8,6 +8,7 @@
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 
+
 import logging
 from typing import Optional
 
@@ -233,8 +234,7 @@ class FilterBar(QWidget):
         此方法根据用户设置的过滤条件（服务名称、表格状态、搜索文本）来决定哪些行在表格中可见。
         """
         try:
-            logger.debug('Func filter_table has been called!')
-            config_main, _ = read_config()
+            config_main = self.main_window.get_elements('config_main')
             color_switch = config_main.get('color_set', 'ON')
             # 计算可见的行数
             visible_rows = 0
@@ -271,7 +271,6 @@ class FilterBar(QWidget):
                     visible_rows += 1
             # 更新状态栏信息为过滤后的行数
             self.label_status.setText(f"{visible_rows} {self.lang['ui.filter_bar_11']}")
-            logger.debug('Func filter_table has been done!')
         except Exception as e:
             logger.exception(f"Exception in filter_table method: {e}")
             self.label_status.setText(self.lang['label_status_error'])

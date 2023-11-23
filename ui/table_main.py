@@ -188,12 +188,12 @@ class TableMain(QTableWidget):
             else:
                 self.hideColumn(column_index)
 
-    def add_row(self, data: List[List[Union[str, Any]]]) -> None:
+    def add_row(self, data: List[List[str]]) -> None:
         """
         向表格中添加一行数据。
 
         :param data: 要添加的数据列表，每个元素代表一列的数据。
-        :type data: List[str]
+        :type data: List[List[str]]
         """
         row_position = 0
         try:

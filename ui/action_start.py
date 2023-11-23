@@ -8,6 +8,7 @@
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 
+
 import logging
 from typing import Dict, List, Tuple, Any
 
@@ -101,7 +102,7 @@ class ActionStart:
         self.table.clear()
         # 初始化表宽
         self.table.set_header_resize()
-        logger.debug('Func initialize done')
+        logger.debug('Initialization finished')
 
     def table_insert(self, table_rows: List[Tuple]) -> None:
         """
@@ -125,7 +126,7 @@ class ActionStart:
             column_name_mapping = {'PRO_CONFIG': 'pro_value', 'PRE_CONFIG': 'pre_value', 'TEST_CONFIG': 'test_value', 'DEV_CONFIG': 'dev_value'}
             action = self.table.showColumn if v else self.table.hideColumn
             action(COL_INFO[column_name_mapping[k]]['col'])
-        logger.debug('Func table_insert and table_column_hide done')
+        logger.debug('Insert to Table Finished.')
 
     # def finalize(self, config_connection: Dict[str, Any], config_main: Dict[str, Any]) -> None:
     def finalize(self, configs: Tuple[Dict[str, Any], Dict[str, Any]]) -> None:
@@ -148,8 +149,8 @@ class ActionStart:
         self.filter_bar.filter_options_add()
         # 初始化表格颜色
         if config_main.get('color_set', 'ON') == 'ON':
-            logger.debug('Func apply_color_to_table start')
             self.table.apply_color_to_table(range(self.table.rowCount()), config_connection)
+            logger.debug('Apply color to table finished')
         # 启用表格更新
         self.table.setUpdatesEnabled(True)
         # 启用过滤栏组件

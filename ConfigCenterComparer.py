@@ -15,12 +15,13 @@ from multiprocessing import freeze_support
 from typing import Optional, Any
 
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QVBoxLayout, QWidget, QToolBar)
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QVBoxLayout, QWidget, QToolBar, QPushButton)
 
 from config.settings import LOG_PATH, PROGRAM_NAME
 from lib.get_resource_path import get_resource_path
 from lib.logging_config import logging_config
 from module.init_config import init_config
+from module.read_config import read_config
 from module.get_lang_dict import get_lang_dict
 from ui import *
 
@@ -41,7 +42,9 @@ class ConfigCenterComparer(QMainWindow):
         super().__init__()
 
         init_config()
+
         self.lang = get_lang_dict()
+        self.config_main, self.config_connection = read_config()
 
         self.init_ui()
 
@@ -66,6 +69,13 @@ class ConfigCenterComparer(QMainWindow):
             self._create_toolbar()
             # 主窗口配置
             self._configure_main_window()
+            # 初始化设置窗口，连接配置更新槽
+            self.dialog_settings_main = DialogSettingsMain(self)
+            self.dialog_settings_main.config_changed.connect(self.update_config_main)
+            self.dialog_settings_connection = DialogSettingsConnection(self)
+            self.dialog_settings_connection.config_changed.connect(self.update_config_connection)
+            self.dialog_logs = DialogLogs(self)
+            self.dialog_about = DialogAbout(self)
         except Exception:
             logger.exception("Unexpected error when initializing main window.")
             self.label_status.setText(self.lang['label_status_error'])
@@ -177,7 +187,6 @@ class ConfigCenterComparer(QMainWindow):
 
         # 移动窗口到屏幕中心
         self._center_window()
-
         # 展示主窗口
         self.show()
 
@@ -210,12 +219,22 @@ class ConfigCenterComparer(QMainWindow):
                 return self.table
             elif name == 'filter_bar':
                 return self.filter_bar
+            elif name == 'config_main':
+                return self.config_main
+            elif name == 'config_connection':
+                return self.config_connection
             else:
                 return None
         except Exception:
             logger.exception(f"Failed to get elements {name}")
             self.label_status.setText(self.lang['label_status_error'])
 
+    def update_config_main(self, new_config):
+        self.config_main = new_config
+
+
+    def update_config_connection(self, new_config):
+        self.config_connection = new_config
 
 def main() -> None:
     """

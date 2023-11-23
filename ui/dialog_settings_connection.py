@@ -1,27 +1,26 @@
 """
-这是一个用于设置和管理软件连接配置的Python模块。
+此模块包含用于处理应用程序设置的用户界面类和相关功能。
 
-此模块包含主要类 `DialogSettingsConnection`，负责创建和处理软件的连接设置对话框。该对话框允许用户配置MySQL和SSH连接参数，并将这些设置保存到配置文件中。此外，该模块还包含辅助函数，用于创建UI组件和处理用户输入。
+主要提供对数据库连接和SSH连接配置的用户界面支持，允许用户方便地修改和保存这些配置。包括MySQL和SSH两种主要的配置方式，用户可以通过图形界面进行配置，并保存到本地文件中。
 
 :author: assassing
 :contact: https://github.com/hxz393
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 
-
 import logging
 import os
 from typing import Union
 
-from PyQt5.QtCore import Qt, QRegExp, QObject
+from PyQt5.QtCore import Qt, QRegExp, QObject, pyqtSignal
 from PyQt5.QtGui import QIcon, QRegExpValidator
 from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QTabWidget, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QGroupBox, QLabel, QCheckBox
 
-from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from lib.write_dict_to_json import write_dict_to_json
-from module.read_config import read_config
 from module.config_path_get import config_path_get
+from ui.config_manager import ConfigManager
+from ui.lang_manager import LangManager
 from ui.message_show import message_show
 
 logger = logging.getLogger(__name__)
@@ -29,46 +28,55 @@ logger = logging.getLogger(__name__)
 
 class DialogSettingsConnection(QDialog):
     """
-    表示一个处理软件连接设置的对话框类。
+    对话框类，用于处理应用程序的数据库和SSH连接设置。
 
-    此类负责创建和管理软件的连接设置对话框，包括MySQL和SSH的配置。用户可以在此对话框中输入并保存连接参数。
+    该类提供了一个图形用户界面，允许用户配置和修改MySQL数据库和SSH连接的相关设置。界面上提供了多个标签页，分别对应不同环境的配置（如生产、预发布、测试和开发环境）。
 
-    :param main_window: 主窗口对象，用于获取语言资源和状态标签。
-    :type main_window: ConfigCenterComparer
+    :param lang_manager: 语言管理器实例，用于处理多语言支持。
+    :type lang_manager: LangManager
+    :param config_manager: 配置管理器实例，用于处理配置的读取和写入。
+    :type config_manager: ConfigManager
     """
+    status_updated = pyqtSignal(str)
 
-    def __init__(self, main_window: ConfigCenterComparer):
-        """
-        初始化连接设置对话框。
-
-        :param main_window: 主窗口对象，用于获取语言资源和状态标签。
-        :type main_window: ConfigCenterComparer
-        """
+    def __init__(self,
+                 lang_manager: LangManager,
+                 config_manager: ConfigManager):
         super().__init__(flags=Qt.Dialog | Qt.WindowCloseButtonHint)
-        self.main_window = main_window
-        self.lang = self.main_window.get_elements('lang')
-        self.label_status = self.main_window.get_elements('label_status')
+        # 初始化管理器
+        self.lang_manager = lang_manager
+        self.config_manager = config_manager
+        # 两个配置都要
+        self.config_main = self.config_manager.get_config_main()
+        self.config_connection = self.config_manager.get_config_connection()
 
+        self.initUI()
+
+    def initUI(self):
+        """
+        初始化用户界面。
+
+        此方法用于创建和设置对话框的界面元素。包括设置窗口标题、图标、样式以及最小尺寸。同时构建配置相关的标签页和底部的确认、取消按钮。
+
+        标签页中包含对MySQL和SSH设置的配置项，每个配置项提供了相应的输入框以供用户输入和修改。标签页会根据不同的配置键（如'PRO_CONFIG'）动态生成。
+
+        :return: 无返回值。
+        :rtype: None
+        """
+        # 定义字典
+        self.lang = self.lang_manager.get_lang()
+        # 主窗口设置
         self.setWindowTitle(self.lang['ui.dialog_settings_connection_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-database-administrator-26')))
         self.setStyleSheet("font-size: 14px;")
         self.setMinimumSize(370, 490)
-
-        self.config_main, self.config_connection = read_config()
+        # 定义标签页配置键和显示名称
         self.tab_config = {
             'PRO_CONFIG': self.lang['ui.dialog_settings_connection_2'],
             'PRE_CONFIG': self.lang['ui.dialog_settings_connection_3'],
             'TEST_CONFIG': self.lang['ui.dialog_settings_connection_4'],
             'DEV_CONFIG': self.lang['ui.dialog_settings_connection_5'],
         }
-        self.initUI()
-
-    def initUI(self):
-        """
-        初始化对话框的用户界面。
-
-        创建并布置各种UI组件，如标签页、按钮和布局。
-        """
         # 主布局
         layout = QFormLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -83,14 +91,20 @@ class DialogSettingsConnection(QDialog):
         layout.addRow(self.tab_widget)
         layout.addRow(self.button_layout)
 
-    def _construct_tab(self, config_key: str, tab_name: str) -> None:
+    def _construct_tab(self,
+                       config_key: str,
+                       tab_name: str) -> None:
         """
         构建一个标签页。
+
+        根据给定的配置键和标签名称，创建并添加一个新的标签页到对话框中。每个标签页包含特定环境（如生产或测试）的MySQL和SSH配置设置。
 
         :param config_key: 配置键，用于标识不同的设置（如'PRO_CONFIG'）。
         :type config_key: str
         :param tab_name: 标签页的显示名称。
         :type tab_name: str
+        :return: 无返回值。
+        :rtype: None
         """
         tab = QWidget()
         tab_layout = QVBoxLayout(tab)
@@ -108,6 +122,9 @@ class DialogSettingsConnection(QDialog):
         此方法用于创建确认和取消按钮，并连接相应的事件处理函数。按钮文本使用当前语言环境下的文本进行设置。
 
         此方法还创建一个水平布局，将按钮添加到布局中，并设置布局的边距。
+
+        :return: 无返回值。
+        :rtype: None
         """
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         # 找到 Ok 和 Cancel 按钮并设置中文文本
@@ -124,7 +141,12 @@ class DialogSettingsConnection(QDialog):
         self.button_layout.addWidget(self.button_box)
         self.button_layout.setContentsMargins(0, 0, 13, 8)
 
-    def _create_check_box(self, config_key: str, name: str, group_box: QGroupBox, layout: QFormLayout, label_name: str) -> QCheckBox:
+    def _create_check_box(self,
+                          config_key: str,
+                          name: str,
+                          group_box: QGroupBox,
+                          layout: QFormLayout,
+                          label_name: str) -> QCheckBox:
         """
         创建并添加一个复选框到指定布局。
 
@@ -168,7 +190,14 @@ class DialogSettingsConnection(QDialog):
         layout.addRow(separator)
         return separator
 
-    def _create_line_edit(self, config_key: str, name: str, key: str, placeholder_txt: str, reg_exp: str, layout: QFormLayout, label_name: str) -> QLineEdit:
+    def _create_line_edit(self,
+                          config_key: str,
+                          name: str,
+                          key: str,
+                          placeholder_txt: str,
+                          reg_exp: str,
+                          layout: QFormLayout,
+                          label_name: str) -> QLineEdit:
         """
         创建并添加一个输入框到指定布局。
 
@@ -262,7 +291,9 @@ class DialogSettingsConnection(QDialog):
         self._toggle_edit_controls(mysql_check_box.isChecked(), mysql_group_box)
         return mysql_group_box
 
-    def _toggle_edit_controls(self, is_checked: bool, root: Union[QWidget, QObject]) -> None:
+    def _toggle_edit_controls(self,
+                              is_checked: bool,
+                              root: Union[QWidget, QObject]) -> None:
         """
         根据复选框的状态切换输入框的可编辑状态。
 
@@ -270,12 +301,16 @@ class DialogSettingsConnection(QDialog):
         :type is_checked: bool
         :param root: 包含输入框的根控件。
         :type root: Union[QWidget, QObject]
+
+        :return: 无返回值。
+        :rtype: None
         """
         for widget in root.findChildren(QLineEdit):
             self._set_line_edit_style(widget, not is_checked)
 
     @staticmethod
-    def _set_line_edit_style(line_edit: QLineEdit, is_read_only: bool) -> None:
+    def _set_line_edit_style(line_edit: QLineEdit,
+                             is_read_only: bool) -> None:
         """
         设置输入框的只读状态和样式。
 
@@ -283,6 +318,9 @@ class DialogSettingsConnection(QDialog):
         :type line_edit: QLineEdit
         :param is_read_only: 输入框是否为只读。
         :type is_read_only: bool
+
+        :return: 无返回值。
+        :rtype: None
         """
         line_edit.setReadOnly(is_read_only)
         if is_read_only:
@@ -296,25 +334,33 @@ class DialogSettingsConnection(QDialog):
 
         当用户点击确认按钮时，从UI组件中提取数据更新配置字典，并将新配置写入文件。
         如果写入过程出错，则记录错误信息。
+
+        :return: 无返回值。
+        :rtype: None
         """
         try:
             # 从输入框更新 config_connection
             self._update_config()
             # 将更新后的配置写入文件
             if write_dict_to_json(os.path.normpath(config_path_get(self.config_main)), self.config_connection):
-                self.label_status.setText(self.lang['ui.dialog_settings_main_13'])
+                # 更新ConfigManager类实例中的配置
+                self.config_manager.update_config_connection(self.config_connection)
+                self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
                 super().accept()
             else:
                 message_show('Critical', self.lang['ui.dialog_settings_main_14'])
         except Exception:
-            logger.exception("Unexpected error")
-            self.label_status.setText(self.lang['label_status_error'])
+            logger.exception("Error encountered while saving configuration.")
+            self.status_updated.emit(self.lang['label_status_error'])
 
     def reject(self) -> None:
         """
         处理对话框的取消操作。
 
         当用户点击取消按钮时，关闭对话框并忽略所有未保存的更改。
+
+        :return: 无返回值。
+        :rtype: None
         """
         super().reject()
 
@@ -323,6 +369,9 @@ class DialogSettingsConnection(QDialog):
         更新连接配置字典。
 
         从对话框的输入框中提取数据，更新内部的配置字典。
+
+        :return: 无返回值。
+        :rtype: None
         """
         config_fields = {
             'mysql': ['host', 'port', 'user', 'password', 'db'],
@@ -333,7 +382,10 @@ class DialogSettingsConnection(QDialog):
             for service, fields in config_fields.items():
                 self._update_service_config(config_key, service, fields)
 
-    def _update_service_config(self, config_key: str, service: str, fields: list) -> None:
+    def _update_service_config(self,
+                               config_key: str,
+                               service: str,
+                               fields: list) -> None:
         """
         更新特定服务的配置。
 
@@ -345,6 +397,9 @@ class DialogSettingsConnection(QDialog):
         :type service: str
         :param fields: 配置字段列表。
         :type fields: list
+
+        :return: 无返回值。
+        :rtype: None
         """
         self.config_connection[config_key][f'{service}_on'] = self.findChild(QCheckBox, f"{config_key}_{service}_check_box").isChecked()
         for field in fields:

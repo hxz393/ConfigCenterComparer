@@ -19,14 +19,8 @@ from lib.mysql_query_with_ssh import mysql_query_with_ssh
 logger = logging.getLogger(__name__)
 
 
-def get_query_result(
-        db_config: Dict[str, Union[bool, Dict[str, str]]],
-        query_sql: str
-) -> Union[
-    Tuple[Tuple[str, str, str, str, datetime.datetime], ...],
-    Tuple[Tuple[str, str, str, datetime.datetime], ...],
-    None
-]:
+def get_query_result(db_config: Dict[str, Union[bool, Dict[str, str]]],
+                     query_sql: str) -> Union[Tuple[Tuple[str, str, str, str, datetime.datetime], ...], Tuple[Tuple[str, str, str, datetime.datetime], ...], None]:
     """
     根据数据库配置和SQL查询语句，获取查询结果。
 

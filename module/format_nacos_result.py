@@ -19,12 +19,10 @@ from lib.dict_flatten import dict_flatten
 logger = logging.getLogger(__name__)
 
 
-def format_nacos_result(
-        app_id: str,
-        namespace_name: str,
-        rest: Tuple[str, datetime.datetime],
-        env_name: str
-) -> Optional[Dict[str, Dict[str, str]]]:
+def format_nacos_result(app_id: str,
+                        namespace_name: str,
+                        rest: Tuple[str, datetime.datetime],
+                        env_name: str) -> Optional[Dict[str, Dict[str, str]]]:
     """
     将从 Nacos 获取的结果格式化为字典。
 

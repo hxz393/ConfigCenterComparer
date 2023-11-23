@@ -11,6 +11,7 @@
 """
 
 import logging
+from typing import Dict
 
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
@@ -87,7 +88,22 @@ class ActionTest:
         )
         message_show('Information', message_info)
 
-    def format_test_result(self, result, test_type):
+    def format_test_result(self,
+                           result: Dict[str, any],
+                           test_type: str
+                           ) -> str:
+        """
+        根据测试结果和测试类型格式化消息字符串。
+
+        此方法会检查指定测试类型的结果，并根据结果的状态（成功、失败、未知）返回不同颜色的消息字符串。
+
+        :param result: 包含测试类型和其对应结果的字典。
+        :type result: Dict[str, any]
+        :param test_type: 要检查的测试类型。
+        :type test_type: str
+        :return: 格式化后的带颜色的消息字符串。
+        :rtype: str
+        """
         if result[test_type] is True:
             color = "green"
             message = f'{test_type} {self.lang["ui.action_test_10"]}<b>{self.lang["ui.action_test_5"]}</b>'
@@ -127,7 +143,7 @@ class TestRun(QThread):
             logger.info(f'Start running test')
             _, config_connection = read_config()
             test_result = test_connection(config_connection)
-            logger.info(f'Test Completed')
+            logger.info(f'Test Finished')
         except Exception:
             logger.exception(f'Error during testing')
             test_result = None

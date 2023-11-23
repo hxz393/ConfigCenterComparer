@@ -13,12 +13,10 @@ from typing import List, Dict
 logger = logging.getLogger(__name__)
 
 
-def modify_name(
-        name: str,
-        prefixes: List[str],
-        suffixes: List[str],
-        replacements: Dict[str, str]
-) -> str:
+def modify_name(name: str,
+                prefixes: List[str],
+                suffixes: List[str],
+                replacements: Dict[str, str]) -> str:
     """
     根据指定的前缀、后缀列表和替换字典修改名称。
 

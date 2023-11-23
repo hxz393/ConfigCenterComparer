@@ -18,10 +18,8 @@ from lib.get_resource_path import get_resource_path
 logger = logging.getLogger(__name__)
 
 
-def message_show(
-        message_type: str,
-        text: str
-) -> None:
+def message_show(message_type: str,
+                 text: str) -> None:
     """
     显示指定类型的消息框。
 
@@ -50,7 +48,7 @@ def message_show(
             msg_box.setIcon(QMessageBox.Information)
             msg_box.setWindowIcon(QIcon(get_resource_path('media/icons8-about-26')))
         else:
-            raise ValueError("Invalid message type provided.")
+            logger.warning("Invalid message type provided.")
 
         msg_box.exec_()
     except Exception:

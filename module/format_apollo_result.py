@@ -15,12 +15,10 @@ from typing import Optional, Dict, Tuple
 logger = logging.getLogger(__name__)
 
 
-def format_apollo_result(
-        app_id: str,
-        namespace_name: str,
-        rest: Tuple[str, str, datetime.datetime],
-        env_name: str
-) -> Optional[Dict[str, Dict[str, str]]]:
+def format_apollo_result(app_id: str,
+                         namespace_name: str,
+                         rest: Tuple[str, str, datetime.datetime],
+                         env_name: str) -> Optional[Dict[str, Dict[str, str]]]:
     """
     将 Apollo 查询结果格式化为更详细和易于理解的字典格式。
 

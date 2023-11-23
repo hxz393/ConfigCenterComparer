@@ -1,9 +1,7 @@
 """
-这是一个用于配置和管理软件设置的Python模块。
+此模块提供了一个对话框界面，用于处理应用程序的主要设置。
 
-本模块包含主要类 `DialogSettingsMain`，用于展示和处理软件设置对话框。此对话框允许用户修改多种设置，包括界面语言、配置中心类型、服务名替换规则等。
-
-本模块的目的是为用户提供一个简洁直观的界面，用于调整和保存软件的关键设置。
+包括语言设置、配置中心类型选择、服务名替换规则等功能。用户可以通过此对话框修改各项设置，并将其保存到配置文件中。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -14,63 +12,67 @@ import logging
 import os
 from typing import List, Tuple
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDialog, QLineEdit, QDialogButtonBox, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QComboBox
 
-from ConfigCenterComparer import ConfigCenterComparer
 from config.lang_dict_all import LANG_DICTS
 from config.settings import CONFIG_MAIN_PATH, CONFIG_CENTER_LIST, APOLLO_NAME_LIST, COLOR_SET_LIST
 from lib.get_resource_path import get_resource_path
 from lib.write_dict_to_json import write_dict_to_json
-from module.read_config import read_config
-from .message_restart import message_restart
-from .message_show import message_show
+from ui.config_manager import ConfigManager
+from ui.lang_manager import LangManager
+from ui.message_show import message_show
 
 logger = logging.getLogger(__name__)
 
 
 class DialogSettingsMain(QDialog):
     """
-    表示配置中心比较器的主设置对话框类。
+    主设置对话框类。
 
-    提供一个图形用户界面，允许用户更改语言、配置中心类型等设置，并将这些设置保存到配置文件中。
+    此类提供了一个对话框界面，供用户修改应用程序的主要设置，例如语言、配置中心类型、服务名替换规则等。
+    它允许用户对这些设置进行更改，并通过按下确定按钮来保存这些更改。
 
-    :param main_window: 配置中心比较器的主窗口对象。
-    :type main_window: ConfigCenterComparer
+    :param lang_manager: 语言管理器实例。
+    :type lang_manager: LangManager
+    :param config_manager: 配置管理器实例。
+    :type config_manager: ConfigManager
+    :ivar status_updated: 用于发出状态更新信号的pyqtSignal实例。
+    :vartype status_updated: pyqtSignal
     """
+    status_updated = pyqtSignal(str)
 
-    def __init__(self, main_window: ConfigCenterComparer):
-        """
-        初始化配置中心比较器的主设置对话框。
-
-        设置窗口标题、图标、样式、最小尺寸，并从配置文件读取当前配置。最后，调用 `initUI` 方法来初始化用户界面。
-
-        :param main_window: 配置中心比较器的主窗口对象。
-        :type main_window: ConfigCenterComparer
-        """
+    def __init__(self,
+                 lang_manager: LangManager,
+                 config_manager: ConfigManager):
         super().__init__(flags=Qt.Dialog | Qt.WindowCloseButtonHint)
-        self.main_window = main_window
-        self.lang = self.main_window.get_elements('lang')
-        self.label_status = self.main_window.get_elements('label_status')
+        # 初始化两个管理器
+        self.lang_manager = lang_manager
+        self.config_manager = config_manager
+        # 获取管理器中的配置
+        self.config_main = self.config_manager.get_config_main()
+        self.initUI()
 
+    def initUI(self) -> None:
+        """
+        初始化用户界面。
+
+        此方法设置对话框的标题、图标、样式和大小，并创建主布局。在主布局中，它添加了主要设置组和额外设置组的布局，并在两者之间添加了弹性空间。最后，添加了按钮布局。
+
+        主要设置组包括语言选择、配置中心类型选择等，而额外设置组包括服务名替换规则的设置。此方法利用私有方法 `_create_main_group` 和 `_create_extra_group` 来创建这些组。
+
+        :return: 无返回值。
+        :rtype: None
+        """
+        # 获取语言字典
+        self.lang = self.lang_manager.get_lang()
+        # 主窗口
         self.setWindowTitle(self.lang['ui.dialog_settings_main_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-setting-26')))
         self.setStyleSheet("font-size: 14px;")
         self.setMinimumSize(370, 490)
 
-        # 从配置文件读取配置
-        self.config_main, _ = read_config()
-        # 存储原始语言设置
-        self.original_language_setting = self.config_main.get('lang', 'English')
-        self.initUI()
-
-    def initUI(self):
-        """
-        初始化用户界面。
-
-        创建并布局主界面和额外界面的组件，包括语言选择、配置中心类型选择等。
-        """
         # 主布局
         layout = QVBoxLayout()
         # 上层布局
@@ -102,7 +104,7 @@ class DialogSettingsMain(QDialog):
         self.apollo_name_combo_box = self._create_combo_box(main_layout, APOLLO_NAME_LIST, self.lang['ui.dialog_settings_main_4'], self.config_main.get('apollo_name', 'AppId'))
         # 下拉框：选择颜色开关
         self.color_set_combo_box = self._create_combo_box(main_layout, COLOR_SET_LIST, self.lang['ui.dialog_settings_main_16'], self.config_main.get('color_set', 'ON'))
-
+        # 分组
         main_group = QGroupBox(self.lang['ui.dialog_settings_main_5'])
         main_group.setStyleSheet("QGroupBox { font-weight: bold; text-align: center; }")
         main_group.setLayout(main_layout)
@@ -126,14 +128,17 @@ class DialogSettingsMain(QDialog):
         self.fix_name_left = self._create_line_edit(extra_layout, self.lang['ui.dialog_settings_main_8'], self.config_main.get('fix_name_left', ''))
         # 输入框：裁剪服务名后缀
         self.fix_name_right = self._create_line_edit(extra_layout, self.lang['ui.dialog_settings_main_9'], self.config_main.get('fix_name_right', ''))
-
+        # 分组
         extra_group = QGroupBox(self.lang['ui.dialog_settings_main_10'])
         extra_group.setStyleSheet("QGroupBox { font-weight: bold; text-align: center; }")
         extra_group.setLayout(extra_layout)
         return extra_group
 
     @staticmethod
-    def _create_combo_box(layout: QVBoxLayout, items: List[str], label_text: str, current_text: str) -> QComboBox:
+    def _create_combo_box(layout: QVBoxLayout,
+                          items: List[str],
+                          label_text: str,
+                          current_text: str) -> QComboBox:
         """
         创建并返回一个预配置的下拉框。
 
@@ -156,7 +161,9 @@ class DialogSettingsMain(QDialog):
         return combo_box
 
     @staticmethod
-    def _create_line_edit(layout: QVBoxLayout, label_text: str, text: str) -> QLineEdit:
+    def _create_line_edit(layout: QVBoxLayout,
+                          label_text: str,
+                          text: str) -> QLineEdit:
         """
         创建并返回一个预配置的文本输入框。
 
@@ -196,24 +203,6 @@ class DialogSettingsMain(QDialog):
         button_layout.setContentsMargins(0, 10, 0, 0)
         return button_layout
 
-    def accept(self):
-        """
-        处理对话框的确认操作。
-
-        当用户点击确认按钮时，更新配置，并尝试将其写入配置文件。如果语言设置发生变化，提示重启。
-        """
-        try:
-            self._update_config()
-            if self._write_config_to_file():
-                self._check_language_change()
-                self.label_status.setText(self.lang['ui.dialog_settings_main_13'])
-                super().accept()
-            else:
-                message_show('Critical', self.lang['ui.dialog_settings_main_14'])
-        except Exception:
-            logger.exception("Unexpected error")
-            self.label_status.setText(self.lang['label_status_error'])
-
     def reject(self) -> None:
         """
         处理对话框的取消操作。
@@ -222,11 +211,43 @@ class DialogSettingsMain(QDialog):
         """
         super().reject()
 
+    def accept(self) -> None:
+        """
+        处理对话框的确认操作。
+
+        当用户点击确认按钮时，此方法会更新配置，并尝试将其写入配置文件。如果成功，则发出状态更新信号；如果失败，则显示错误消息。
+
+        :return: 无返回值。
+        :rtype: None
+        """
+        try:
+            # 获取原始语言设置
+            self.original_language_setting = self.config_main.get('lang', 'English')
+            # 读取用户输入的新配置
+            self._update_config()
+            # 写入配置到文件
+            if self._write_config_to_file():
+                # 对比语言值，有修改则在LangManager类中修改
+                self._check_language_change()
+                # 更新ConfigManager类实例中的配置
+                self.config_manager.update_config_main(self.config_main)
+                # 发送更新成功信号
+                self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
+                super().accept()
+            else:
+                message_show('Critical', self.lang['ui.dialog_settings_main_14'])
+        except Exception:
+            logger.exception("Error while updating settings")
+            self.status_updated.emit(self.lang['label_status_error'])
+
     def _update_config(self) -> None:
         """
         更新配置信息。
 
         从对话框中收集用户输入的数据，并更新内存中的配置信息。不直接写入文件。
+
+        :return: 无返回值。
+        :rtype: None
         """
         before_list = self.fix_name_before.text().split(' ')
         after_list = self.fix_name_after.text().split(' ')
@@ -242,7 +263,8 @@ class DialogSettingsMain(QDialog):
         self.config_main['fix_name_right'] = self.fix_name_right.text()
 
     @staticmethod
-    def _adjust_list_lengths(before_list: List[str], after_list: List[str]) -> Tuple[List[str], List[str]]:
+    def _adjust_list_lengths(before_list: List[str],
+                             after_list: List[str]) -> Tuple[List[str], List[str]]:
         """
         调整两个列表的长度使其相等。
 
@@ -275,14 +297,23 @@ class DialogSettingsMain(QDialog):
             write_dict_to_json(os.path.normpath(CONFIG_MAIN_PATH), self.config_main)
             return True
         except Exception:
-            logger.exception("Unexpected error")
+            logger.exception("Error while writing configuration to file")
             return False
 
     def _check_language_change(self) -> None:
         """
         检查语言设置是否更改。
 
-        如果用户更改了语言设置，显示重启消息提示用户重启应用以应用新的语言设置。
+        如果用户更改语言设置，要调用LangManager类的方法update_lang，发送新语言字符串。
+        更新LangManager类实例中的self.lang_dict内容，并发送lang_updated信号。
+        所有连接了LangManager类实例lang_updated信号的类，将会执行绑定的函数。
+        一般是self.update_lang()，里面最先运行的就是更新自己的self.lang：
+        self.lang = self.lang_manager.get_lang()
+        然后是用方法更新各地方的显示字符串：
+        self.action_about.setText(self.lang['ui.action_about_1'])
+
+        :rtype: None
+        :return: 无返回值。
         """
         if self.language_combo_box.currentText() != self.original_language_setting:
-            message_restart(self.lang['ui.dialog_settings_main_15'])
+            self.lang_manager.update_lang(self.language_combo_box.currentText())

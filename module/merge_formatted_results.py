@@ -14,10 +14,8 @@ from typing import Dict
 logger = logging.getLogger(__name__)
 
 
-def merge_formatted_results(
-        formatted_results: Dict[str, Dict[str, str]],
-        formatted_result: Dict[str, Dict[str, str]]
-) -> None:
+def merge_formatted_results(formatted_results: Dict[str, Dict[str, str]],
+                            formatted_result: Dict[str, Dict[str, str]]) -> None:
     """
     将新的格式化结果字典合并到已有的格式化结果字典中。
 

@@ -14,11 +14,9 @@ from typing import Dict, List
 logger = logging.getLogger(__name__)
 
 
-def determine_consistency_status(
-        values: List[str],
-        config: Dict[str, str],
-        valid_keys: List[str]
-) -> str:
+def determine_consistency_status(values: List[str],
+                                 config: Dict[str, str],
+                                 valid_keys: List[str]) -> str:
     """
     配置的一致性状态判断逻辑。
 
