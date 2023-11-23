@@ -20,7 +20,7 @@ from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from module.read_config import read_config
 from module.test_connection import test_connection
-from .message_show import message_show
+from ui.message_show import message_show
 
 logger = logging.getLogger(__name__)
 
@@ -76,18 +76,29 @@ class ActionTest:
         self.label_status.setText(self.lang['ui.action_test_8'])
 
         if not test_result:
-            message_show('Warning', self.lang['ui.action_test_3'])
+            message_show('Critical', self.lang['ui.action_test_3'])
             return
 
         message_info = ''.join(
-            f'<b>{result["env_name"]}</b> {self.lang["ui.action_test_4"]}<br>'
-            f'<span style="color: {"green" if result["ssh_test_result"] else "red"};">'
-            f'{"SSH " + self.lang["ui.action_test_5"] if result["ssh_test_result"] else "SSH " + self.lang["ui.action_test_6"]}</span> '
-            f'<span style="color: {"green" if result["mysql_test_result"] else "red"};">'
-            f'{"MySQL " + self.lang["ui.action_test_5"] if result["mysql_test_result"] else "MySQL " + self.lang["ui.action_test_6"]}</span><br>'
+            f'<b>{result["env_name"]}</b> {self.lang["ui.action_test_4"]}<br>' +
+            self.format_test_result(result, "SSH") + " " +
+            self.format_test_result(result, "MySQL") + "<br>"
             for result in test_result
         )
         message_show('Information', message_info)
+
+    def format_test_result(self, result, test_type):
+        if result[test_type] is True:
+            color = "green"
+            message = f'{test_type} {self.lang["ui.action_test_10"]}<b>{self.lang["ui.action_test_5"]}</b>'
+        elif result[test_type] is False:
+            color = "red"
+            message = f'{test_type} {self.lang["ui.action_test_10"]}<b>{self.lang["ui.action_test_6"]}</b>'
+        else:
+            color = "gray"
+            message = f'{test_type} {self.lang["ui.action_test_10"]}<b>{self.lang["ui.action_test_9"]}</b>'
+
+        return f'<span style="color: {color};">{message}</span><br>'
 
 
 class TestRun(QThread):

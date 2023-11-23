@@ -37,6 +37,5 @@ def message_restart(text: str) -> None:
         QCoreApplication.quit()
         python = sys.executable
         os.execl(python, python, *sys.argv)
-
     except Exception:
         logger.exception(f"Error during configuration change restart process")

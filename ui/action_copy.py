@@ -102,7 +102,10 @@ class ActionCopy:
                 range_data.append('\t'.join(self._extract_row_data(row, selected_range)))
         return range_data
 
-    def _extract_row_data(self, row: int, selected_range: QTableWidgetSelectionRange) -> List[str]:
+    def _extract_row_data(self,
+                          row: int,
+                          selected_range: QTableWidgetSelectionRange
+                          ) -> List[str]:
         """
         从表格的指定行中提取数据。
 

@@ -1,43 +1,80 @@
 """
-这是一个用于处理和格式化配置中心查询结果的Python模块。
+此模块提供了对查询结果进行格式化处理的功能。它支持不同配置中心的查询结果格式化，并合并处理后的结果。
 
-此模块提供了主要的功能：处理查询结果并将其格式化为特定结构的字典，主要用于不同配置中心（如Apollo和Nacos）的数据处理。它提供了将查询结果从原始格式转换为更易于理解和处理的格式化字典的能力。
-
-本模块的主要目的是为了提高处理来自不同配置中心的数据的效率，并保持数据格式的一致性。
+主要功能包括格式化Apollo和Nacos配置中心的查询结果，并将这些结果合并到一个字典中。
 
 :author: assassing
 :contact: https://github.com/hxz393
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 
+import datetime
 import logging
-from typing import Dict, Any, Tuple
+from typing import Dict, Tuple, Union
 
-from .format_single_query_result import format_single_query_result
-from .merge_formatted_results import merge_formatted_results
+from module.format_apollo_result import format_apollo_result
+from module.format_nacos_result import format_nacos_result
+from module.merge_formatted_results import merge_formatted_results
+from module.modify_name import modify_name
 
 logger = logging.getLogger(__name__)
 
 
-def format_query_results(query_results: Tuple[Tuple[str, Any]], env_name: str, name_config: Dict[str, Any], formatted_results: Dict[str, Dict[str, Any]]) -> None:
+def format_query_results(
+        query_results: Union[Tuple[Tuple[str, str, str, str, datetime.datetime], ...], Tuple[Tuple[str, str, str, datetime.datetime], ...]],
+        env_name: str,
+        config_main: Dict[str, str],
+        formatted_results: Dict[str, Dict[str, str]]
+) -> None:
     """
-    根据配置中心类型和环境名称，处理多个查询结果并将其合并到已有的结果字典中。
+    格式化查询结果，并根据不同的配置中心处理它们。
 
-    此函数接受多个查询结果，针对每个结果调用 `format_single_query_result` 函数进行格式化，然后将格式化后的结果合并到一个统一的字典中。这有助于统一管理来自不同源的配置数据。
+    此函数处理Apollo和Nacos配置中心的查询结果。它使用 modify_name 函数来处理名称字段，并根据配置中心的类型调用相应的格式化函数。
 
-    :param query_results: 包含多个查询结果的元组，每个结果包括应用名、命名空间和其它数据。
-    :type query_results: Tuple[Tuple[str, Any]]
-    :param env_name: 环境名称，用于确定格式化的上下文。
+    :param query_results: 查询结果，可能是多种不同格式的元组或None。
+    :type query_results: QueryResult
+    :param env_name: 环境名称。
     :type env_name: str
-    :param name_config: 包含配置中心类型和其它相关配置的字典。
-    :type name_config: Dict[str, Any]
-    :param formatted_results: 已格式化的结果字典，用于合并新格式化结果。
-    :type formatted_results: Dict[str, Dict[str, Any]]
+    :param config_main: 主要配置参数字典。
+    :type config_main: Dict[str, str]
+    :param formatted_results: 格式化后的结果将被存储的字典。
+    :type formatted_results: Dict[str, Dict[str, str]]
+    :return: None
+    :rtype: None
+
+    :example:
+    >>> results = (('admin', 'application', 'resource.search.debugEnabled', 'true', datetime.datetime(2022, 8, 1, 11, 41, 44)), ('basic', 'application', 'spring.application.name', 'basic', datetime.datetime(2023, 10, 31, 13, 37, 43)),)
+    >>> env = "PRO_CONFIG"
+    >>> config = {"config_center": "Apollo", 'apollo_name': 'AppId', "fix_name_left": "app-", "fix_name_right": "-test", "fix_name_before": "old", "fix_name_after": "new"}
+    >>> f_results = {}
+    >>> format_query_results(results, env, config, f_results)
+    >>> print(f_results)
+    {'admin+application+resource.search.debugEnabled': {'app_id': 'admin', 'namespace_name': 'application', 'key': 'resource.search.debugEnabled', 'PRO_CONFIG': 'true', 'PRO_CONFIG_modified_time': '2022-08-01 11:41:44'}, 'basic+application+spring.application.name': {'app_id': 'basic', 'namespace_name': 'application', 'key': 'spring.application.name', 'PRO_CONFIG': 'basic', 'PRO_CONFIG_modified_time': '2023-10-31 13:37:43'}}
     """
     try:
+        # 简化变量分配
+        prefixes = config_main['fix_name_left'].split()
+        suffixes = config_main['fix_name_right'].split()
+        replacements = dict(zip(config_main['fix_name_before'].split(), config_main['fix_name_after'].split()))
+
         for single_query_result in query_results:
-            formatted_result = format_single_query_result(single_query_result, env_name, name_config)
+            name, namespace_name, *rest = single_query_result
+            # 处理app_id字段
+            app_id = modify_name(name, prefixes, suffixes, replacements)
+
+            # 根据不同配置中心，格式化查询结果
+            if config_main['config_center'] == 'Apollo':
+                # 返回只有一个键值对的字典
+                formatted_result = format_apollo_result(app_id, namespace_name, rest, env_name)
+            else:
+                # 返回有多个键值对的字典
+                formatted_result = format_nacos_result(app_id, namespace_name, rest, env_name)
+
             if formatted_result:
+                # 合并单条格式化字典到总字典
                 merge_formatted_results(formatted_results, formatted_result)
+            else:
+                logger.error(f'Formatting error for result: {single_query_result}')
+
     except Exception:
-        logger.exception("Unexpected error during formatting query results")
+        logger.exception(f"Unexpected error during formatting query results. ENV name: {env_name}")

@@ -12,6 +12,7 @@
 :copyright: Copyright 2023, hxz393. 保留所有权利。
 """
 
+
 import logging
 
 from PyQt5.QtGui import QIcon
@@ -37,6 +38,7 @@ class ActionLogs:
         初始化 ActionLogs 类的实例。
 
         :param main_window: 主窗口对象，用于访问和操作界面元素。
+        :type main_window: ConfigCenterComparer
         """
         self.main_window = main_window
         self.label_status = self.main_window.get_elements('label_status')

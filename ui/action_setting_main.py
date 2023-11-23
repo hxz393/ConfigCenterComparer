@@ -37,6 +37,7 @@ class ActionSettingMain:
         初始化 ActionSettingMain 类的实例。
 
         :param main_window: 主窗口对象，用于访问和操作界面元素。
+        :type main_window: ConfigCenterComparer
         """
         self.main_window = main_window
         self.label_status = self.main_window.get_elements('label_status')

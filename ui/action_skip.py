@@ -64,21 +64,24 @@ class ActionSkip:
         :rtype: None
         """
         try:
+            # 读取配置和忽略列表
             skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
-            config_main, _ = read_config()
+            config_main, config_connection = read_config()
 
-            # 更新过滤器列表并写入文件
+            # 更新忽略列表并写入文件
             for item in self.table.selectedItems():
                 row = item.row()
                 self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "yes")
                 self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])
                 skip_list.append(f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}")
+                # 应用颜色。
                 if config_main.get('color_set', 'ON') == 'ON':
-                    self.table.apply_color_to_table([row])
+                    self.table.apply_color_to_table([row], config_connection)
+            write_list_to_file(CONFIG_SKIP_PATH, set(skip_list))
 
+            # 重新应用过略器
             self.filter_bar.filter_table()
             self.label_status.setText(self.lang['ui.action_skip_3'])
-            write_list_to_file(CONFIG_SKIP_PATH, set(skip_list))
         except Exception:
             logger.exception(f"An error occurred during skip items")
             self.label_status.setText(self.lang['label_status_error'])

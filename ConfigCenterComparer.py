@@ -21,6 +21,7 @@ from config.settings import LOG_PATH, PROGRAM_NAME
 from lib.get_resource_path import get_resource_path
 from lib.logging_config import logging_config
 from module.init_config import init_config
+from module.get_lang_dict import get_lang_dict
 from ui import *
 
 logger = logging.getLogger(__name__)
@@ -39,7 +40,8 @@ class ConfigCenterComparer(QMainWindow):
         """
         super().__init__()
 
-        self.lang = init_config()
+        init_config()
+        self.lang = get_lang_dict()
 
         self.init_ui()
 

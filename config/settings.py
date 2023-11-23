@@ -16,10 +16,10 @@ WEBSITE_URL = 'https://blog.x2b.net'
 CHECK_UPDATE_URL = 'https://blog.x2b.net/ver/configcentercomparerversion.txt'
 GITHUB_PROFILE = 'https://github.com/hxz393'
 GITHUB_URL = 'https://github.com/hxz393/ConfigCenterComparer'
-# 设置菜单下拉列表
-CONFIG_CENTER_LIST = ['Apollo', 'Nacos',]
-APOLLO_NAME_LIST = ['AppId', 'Name',]
-COLOR_SET_LIST = ['ON', 'OFF',]
+# 设置菜单下拉框选项
+CONFIG_CENTER_LIST = ['Apollo', 'Nacos', ]
+APOLLO_NAME_LIST = ['AppId', 'Name', ]
+COLOR_SET_LIST = ['ON', 'OFF', ]
 # 默认配置
 DEFAULT_CONFIG_MAIN = {
     'lang': 'English',  # zh-cht en zh-chs
@@ -164,5 +164,4 @@ COLOR_CONSISTENCY_PARTIALLY = '#bbddff'
 COLOR_DEFAULT = '#ffffff'
 COLOR_EMPTY = '#ffdbcd'
 COLOR_SKIP = '#e0e0e0'
-COLOR_HIGHLIGHT = '#ff0000'
-COLOR_FONT_DEFAULT = '#000000'
+COLOR_HIGHLIGHT = '#ffff66'

@@ -11,14 +11,14 @@
 """
 
 import logging
-from typing import Any, Optional, Dict
+from typing import Any, Optional, Dict, Tuple
 
 import pymysql
 
 logger = logging.getLogger(__name__)
 
 
-def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[tuple[tuple[Any, ...], ...]]:
+def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[Any]:
     """
     执行 MySQL 查询并返回结果。
 
@@ -32,7 +32,7 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[tuple[
     required_keys = ['host', 'port', 'user', 'password', 'db']
     if not all(key in mysql_config and mysql_config[key] for key in required_keys):
         logger.error(f"MySQL configuration keys are missing or contain empty values")
-        return None
+        return False
 
     try:
         mysql_config['port'] = int(mysql_config['port'])
@@ -43,4 +43,4 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[tuple[
                 return result
     except Exception:
         logger.exception(f"Unexpected error")
-        return None
+        return False

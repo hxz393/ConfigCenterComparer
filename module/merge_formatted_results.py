@@ -1,9 +1,7 @@
 """
-这是一个用于合并和更新格式化结果的Python模块。
+这个模块提供了用于合并格式化结果的功能，可以将新的格式化结果字典合并到一个已有的格式化结果字典中。
 
-此模块提供了一个主要函数：`merge_formatted_results`，用于将新的结果字典合并到现有的结果字典中。此操作主要用于在数据处理中更新和整合来自不同来源的信息。
-
-本模块的主要目的是提供一个简洁有效的方式来处理和更新复杂的字典结构数据。
+主要功能是 `merge_formatted_results` 函数，它处理字典类型的数据，将新的字典内容合并到既定的字典中。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -11,25 +9,45 @@
 """
 
 import logging
-
-from typing import Dict, Any
+from typing import Dict
 
 logger = logging.getLogger(__name__)
 
 
-def merge_formatted_results(existing_results: Dict[str, Dict[str, Any]], new_result: Dict[str, Dict[str, Any]]) -> None:
+def merge_formatted_results(
+        formatted_results: Dict[str, Dict[str, str]],
+        formatted_result: Dict[str, Dict[str, str]]
+) -> None:
     """
-    合并现有结果与新的结果。
+    将新的格式化结果字典合并到已有的格式化结果字典中。
 
-    此函数负责将新的结果字典合并到现有的结果字典中。如果已存在的键，则更新其值；如果不存在，则添加新的键值对。
+    此函数接收两个参数：一个存储已有格式化结果的字典和一个新的格式化结果字典。它会遍历新字典的每个项，并将其内容合并到已有字典的相应项中。
 
-    :param existing_results: 现有的结果字典，其中每个键对应一个字典结构的值。
-    :type existing_results: Dict[str, Dict[str, Any]]
-    :param new_result: 新的结果字典，其结构应与现有结果字典相同。
-    :type new_result: Dict[str, Dict[str, Any]]
+    :param formatted_results: 存储已有格式化结果的字典。
+    :type formatted_results: Dict[str, Dict[str, str]]
+    :param formatted_result: 新的格式化结果字典，将被合并到 formatted_results 中。
+    :type formatted_result: Dict[str, Dict[str, str]]
+    :return: 无返回值。
+    :rtype: None
+
+    :example:
+    >>> existing_results = {"index_key1": {"key1": "value1"}}
+    >>> new_result = {"index_key1": {"key2": "value2"}, "index_key2": {"key3": "value3"}}
+    >>> merge_formatted_results(existing_results, new_result)
+    >>> print(existing_results)
+    {'index_key1': {'key1': 'value1', 'key2': 'value2'}, 'index_key2': {'key3': 'value3'}}
+    """
+    """
+    合并格式化结果。
+
+    :type formatted_results: Dict[str, Dict[str, str]]
+    :param formatted_results: 存储已有格式化结果的字典。
+    :type formatted_result: Dict[str, Dict[str, str]]
+    :param formatted_result: 新的格式化结果字典，将被合并到 formatted_results 中。
     """
     try:
-        for key, value in new_result.items():
-            existing_results.setdefault(key, {}).update(value)
+        # 合并字典
+        for index_key, config_dict in formatted_result.items():
+            formatted_results.setdefault(index_key, {}).update(config_dict)
     except Exception:
         logger.exception("Error occurred while merging formatted results.")

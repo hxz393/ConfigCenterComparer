@@ -11,14 +11,14 @@
 """
 
 import logging
-from typing import List, Union, Any, Optional
+from typing import List, Union, Any, Optional, Dict
 
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QBrush, QColor
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QMenu, QAction, QHeaderView
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_DEFAULT, COLOR_EMPTY
+from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_EMPTY
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class TableMain(QTableWidget):
             self.setEditTriggers(QTableWidget.NoEditTriggers)
             self.setSelectionBehavior(QTableWidget.SelectItems)
             # 隐藏垂直表头
-            # self.verticalHeader().setVisible(False)
+            self.verticalHeader().setVisible(False)
             # 启用自动换行，没生效
             self.setWordWrap(True)
             self.setTextElideMode(Qt.ElideNone)
@@ -215,19 +215,21 @@ class TableMain(QTableWidget):
             logger.exception("Error occurred while adding a new row")
             self.removeRow(row_position)
 
-    def apply_color_to_table(self, rows: List[int]) -> None:
+    def apply_color_to_table(self, rows: List[int], config_connection: Dict[str, Any]) -> None:
         """
         根据一致性和跳过状态给表格行应用颜色。
 
+        :param config_connection: 数据库连接配置字典。
+        :type config_connection: Dict[str, Any]
         :param rows: 要应用颜色的行号列表。
         :type rows: List[int]
         """
-        check_none_value_column_list = [
-            COL_INFO['pro_value']['col'],
-            COL_INFO['pre_value']['col'],
-            COL_INFO['test_value']['col'],
-            COL_INFO['dev_value']['col'],
-        ]
+        environments = ['PRO', 'PRE', 'TEST', 'DEV']
+        check_none_value_column_status = {
+            COL_INFO[f'{env.lower()}_value']['col']: config_connection[f'{env}_CONFIG']['mysql_on']
+            for env in environments
+        }
+        check_none_value_column_list = [column for column, status in check_none_value_column_status.items() if status]
         try:
             for row in rows:
                 consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
@@ -243,10 +245,9 @@ class TableMain(QTableWidget):
                     self.apply_color(row, COLOR_CONSISTENCY_FULLY)
                 elif consistency_data == 'partially':
                     self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
-                else:
-                    self.apply_color(row, COLOR_DEFAULT)
 
                 # 遍历指定列检查空值
+                # for column in range(self.columnCount()):
                 for column in check_none_value_column_list:
                     if self.item(row, column).text() == 'None':
                         self.apply_color(row, COLOR_EMPTY, column)
@@ -303,9 +304,8 @@ class TableMain(QTableWidget):
             self.setUpdatesEnabled(False)
             # 首先清除所有单元格的内容
             self.clearContents()
-            # 接着删除所有行
-            while self.rowCount() > 0:
-                self.removeRow(0)
+            # 将行数设置为0，从而删除所有行
+            self.setRowCount(0)
             # 重新启用更新
             self.setUpdatesEnabled(True)
         except Exception as e:

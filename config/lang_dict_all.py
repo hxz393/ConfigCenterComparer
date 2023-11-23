@@ -1,7 +1,7 @@
 """
 语言字典
 """
-lang_dict_all = {
+LANG_DICTS = {
     'English': {
         'main_1': 'Ready',
         'main_2': '  &Start ',
@@ -48,9 +48,11 @@ lang_dict_all = {
         'ui.action_test_3': 'Test failed, an exception occurred.',
         'ui.action_test_4': 'Environment: ',
         'ui.action_test_5': 'Connection OK!',
-        'ui.action_test_6': 'Connection failed!',
+        'ui.action_test_6': 'Connection Failed!',
         'ui.action_test_7': 'Testing database connection...',
         'ui.action_test_8': 'Test connection completed',
+        'ui.action_test_9': 'Test Skipped!',
+        'ui.action_test_10': 'Test Result: ',
         'ui.action_start_1': 'Run',
         'ui.action_start_2': 'Start execution, fetch configurations from database',
         'ui.action_start_3': 'Querying database...',
@@ -196,6 +198,8 @@ lang_dict_all = {
         'ui.action_test_6': '连接失败！',
         'ui.action_test_7': '测试数据库连接中...',
         'ui.action_test_8': '测试连接完成',
+        'ui.action_test_9': '跳过测试！',
+        'ui.action_test_10': '测试结果：',
         'ui.action_start_1': '开始运行',
         'ui.action_start_2': '开始运行，从数据库中获取配置',
         'ui.action_start_3': '正在查询数据库...',

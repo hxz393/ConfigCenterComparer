@@ -19,7 +19,7 @@ from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import COL_INFO
 from lib.get_resource_path import get_resource_path
 from module.read_config import read_config
-from module.start_query import start_query
+from module.execute_queries import execute_queries
 from .message_show import message_show
 
 logger = logging.getLogger(__name__)
@@ -90,6 +90,13 @@ class ActionStart:
         self.table.setSortingEnabled(False)
         # 禁用表格更新
         self.table.setUpdatesEnabled(False)
+        # 禁用过滤栏组件
+        self.filter_bar.filter_app_box.setEnabled(False)
+        self.filter_bar.filter_table_box.setEnabled(False)
+        self.filter_bar.filter_table_check_box.setEnabled(False)
+        self.filter_bar.filter_value_box.setEnabled(False)
+        self.filter_bar.filter_value_button.setEnabled(False)
+        self.filter_bar.filter_reset_button.setEnabled(False)
         # 清空表格数据
         self.table.clear()
         # 初始化表宽
@@ -120,14 +127,17 @@ class ActionStart:
             action(COL_INFO[column_name_mapping[k]]['col'])
         logger.debug('Func table_insert and table_column_hide done')
 
-    def finalize(self, color_switch: str) -> None:
+    # def finalize(self, config_connection: Dict[str, Any], config_main: Dict[str, Any]) -> None:
+    def finalize(self, configs: Tuple[Dict[str, Any], Dict[str, Any]]) -> None:
         """
         完成查询后的收尾工作，包括重新启用表格排序和更新。
 
-        :param color_switch: 指示是否应用颜色的开关。
-        :type color_switch: str
+        :param configs: 配置元祖。
+        :type configs: Tuple[Dict[str, Any], Dict[str, Any]]
+
         :return: None
         """
+        config_connection, config_main = configs
         # 启动排序
         self.table.setSortingEnabled(True)
         # 默认按第一列升序排序
@@ -137,11 +147,20 @@ class ActionStart:
         # 更新过滤器，过滤服务中插入值
         self.filter_bar.filter_options_add()
         # 初始化表格颜色
-        if color_switch == 'ON':
+        if config_main.get('color_set', 'ON') == 'ON':
             logger.debug('Func apply_color_to_table start')
-            self.table.apply_color_to_table(range(self.table.rowCount()))
+            self.table.apply_color_to_table(range(self.table.rowCount()), config_connection)
         # 启用表格更新
         self.table.setUpdatesEnabled(True)
+        # 启用过滤栏组件
+        self.filter_bar.filter_app_box.setEnabled(True)
+        self.filter_bar.filter_table_box.setEnabled(True)
+        self.filter_bar.filter_table_check_box.setEnabled(True)
+        self.filter_bar.filter_value_box.setEnabled(True)
+        self.filter_bar.filter_value_button.setEnabled(True)
+        self.filter_bar.filter_reset_button.setEnabled(True)
+        # 最后调用过滤器
+        self.filter_bar.filter_table()
 
     def show_result_message(self, result: str) -> None:
         """
@@ -181,7 +200,7 @@ class StartWork(QThread):
     message = pyqtSignal(str)
     table_insert_signal = pyqtSignal(list)
     table_column_hide_signal = pyqtSignal(dict)
-    finalize_signal = pyqtSignal(str)
+    finalize_signal = pyqtSignal(tuple)
 
     def __init__(self, lang: dict) -> None:
         """
@@ -200,7 +219,7 @@ class StartWork(QThread):
         """
         线程执行的主要方法。
 
-        在此方法中，执行所有必要的查询操作，并发送信号以更新 UI。
+        在此方法中，执行所有必要查询操作，并发送信号以更新 UI。
 
         :return: None
         """
@@ -210,16 +229,13 @@ class StartWork(QThread):
 
             # 读取配置信息，开始数据库查询
             config_main, config_connection = read_config()
-            query_results = start_query(config_connection, config_main)
-            logger.debug('Func start_query done')
-            if not query_results:
+            formatted_results, query_statuses = execute_queries(config_connection, config_main)
+            if not formatted_results:
                 self.message.emit('no query result')
                 return
 
             # 合成要插入表格的数据
-            formatted_results, query_statuses = query_results
             table_rows = self.prepare_table_rows(formatted_results)
-            logger.debug('Func prepare_table_rows done')
             if not table_rows:
                 self.message.emit('prepare table rows failed')
                 return
@@ -228,12 +244,9 @@ class StartWork(QThread):
             self.table_insert_signal.emit(table_rows)
             # 隐藏主表格不必要的列
             self.table_column_hide_signal.emit(query_statuses)
-            if not table_rows:
-                self.message.emit('add to table error')
-                return
 
             # 收尾工作
-            self.finalize_signal.emit(config_main.get('color_set', 'ON'))
+            self.finalize_signal.emit((config_connection, config_main))
             self.message.emit('done')
         except Exception:
             logger.exception('Error occurred during execution')

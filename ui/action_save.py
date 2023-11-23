@@ -83,12 +83,10 @@ class ActionSave:
         :return: 表格数据的字典，键为行号，值为该行的数据字典；如果提取失败，则返回None。
         :rtype: Optional[Dict[int, Dict[str, str]]]
         """
-        table_data = {
+        return {
             row: {
                 self.table.horizontalHeaderItem(col).text(): self.table.item(row, col).text()
                 for col in range(self.table.columnCount()) if not self.table.isColumnHidden(col)
             }
             for row in range(self.table.rowCount()) if not self.table.isRowHidden(row)
         }
-        return table_data
-

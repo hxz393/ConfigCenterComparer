@@ -15,7 +15,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 
 from ConfigCenterComparer import ConfigCenterComparer
-from config.settings import CONFIG_SKIP_PATH, COL_INFO
+from config.settings import CONFIG_SKIP_PATH, COL_INFO, COLOR_DEFAULT
 from lib.get_resource_path import get_resource_path
 from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
@@ -65,7 +65,7 @@ class ActionUnskip:
         """
         try:
             skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
-            config_main, _ = read_config()
+            config_main, config_connection = read_config()
             selected_keys = []
 
             # 重生成过滤列表
@@ -75,7 +75,8 @@ class ActionUnskip:
                 self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_11'])
                 selected_keys.append(f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}")
                 if config_main.get('color_set', 'ON') == 'ON':
-                    self.table.apply_color_to_table([row])
+                    self.table.apply_color(row, COLOR_DEFAULT)
+                    self.table.apply_color_to_table([row], config_connection)
 
             skip_list = [f for f in skip_list if f not in selected_keys]
             self.filter_bar.filter_table()

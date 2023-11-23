@@ -19,7 +19,9 @@ from module.config_path_get import config_path_get
 logger = logging.getLogger(__name__)
 
 
-def read_config() -> Optional[Tuple[Dict[str, str], Dict[str, Dict[str, Union[Dict[str, str], bool]]]]]:
+def read_config() -> Optional[Tuple[
+    Dict[str, str],
+    Dict[str, Dict[str, Union[Dict[str, str], bool]]]]]:
     """
     初始化并获取配置字典。
 

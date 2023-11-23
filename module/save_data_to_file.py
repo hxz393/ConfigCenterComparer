@@ -19,7 +19,11 @@ from lib.write_dict_to_json import write_dict_to_json
 logger = logging.getLogger(__name__)
 
 
-def save_data_to_file(file_name: str, file_type: str, data: Dict[int, Dict[str, str]]) -> Optional[bool]:
+def save_data_to_file(
+        file_name: str,
+        file_type: str,
+        data: Dict[int, Dict[str, str]]
+) -> Optional[bool]:
     """
     将字典格式的数据保存到CSV或JSON文件中。
 
