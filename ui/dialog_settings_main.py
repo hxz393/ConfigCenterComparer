@@ -52,6 +52,8 @@ class DialogSettingsMain(QDialog):
         self.config_manager = config_manager
         # 获取管理器中的配置
         self.config_main = self.config_manager.get_config_main()
+        # 获取语言字典
+        self.lang = self.lang_manager.get_lang()
         self.initUI()
 
     def initUI(self) -> None:
@@ -65,8 +67,6 @@ class DialogSettingsMain(QDialog):
         :return: 无返回值。
         :rtype: None
         """
-        # 获取语言字典
-        self.lang = self.lang_manager.get_lang()
         # 主窗口
         self.setWindowTitle(self.lang['ui.dialog_settings_main_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-setting-26')))
@@ -233,6 +233,7 @@ class DialogSettingsMain(QDialog):
                 self.config_manager.update_config_main(self.config_main)
                 # 发送更新成功信号
                 self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
+                logger.info("Settings saved")
                 super().accept()
             else:
                 message_show('Critical', self.lang['ui.dialog_settings_main_14'])

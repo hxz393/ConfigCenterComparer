@@ -1,7 +1,7 @@
 """
-这是一个用于配置中心比较器的辅助模块，提供了跳过指定条目的功能。
+本模块提供用户界面中的动作处理功能，尤其是忽略选中项的功能。
 
-此模块主要包含 `ActionSkip` 类，用于处理用户在配置比较过程中跳过特定项目的动作。它包括界面的初始化、事件绑定以及状态更新。
+此模块包含 `ActionSkip` 类，用于实现忽略选中项目的动作。该类负责处理用户界面的忽略动作，并与配置管理器和语言管理器交互以更新用户界面。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -9,80 +9,127 @@
 """
 
 import logging
+from typing import List
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QTableWidget
 
-from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import CONFIG_SKIP_PATH, COL_INFO
 from lib.get_resource_path import get_resource_path
-from lib.read_file_to_list import read_file_to_list
 from lib.write_list_to_file import write_list_to_file
+from ui.config_manager import ConfigManager
+from ui.lang_manager import LangManager
 
 logger = logging.getLogger(__name__)
 
 
-class ActionSkip:
+class ActionSkip(QObject):
     """
-    用于处理跳过配置项动作的类。
+    处理用户界面中忽略操作的类。
 
-    此类封装了跳过配置项的界面逻辑，包括初始化跳过按钮、绑定相关事件、以及更新界面状态。
-
-    :param main_window: 主窗口对象，用于访问和操作界面元素。
-    :type main_window: ConfigCenterComparer
+    :param lang_manager: 语言管理器，用于处理界面语言设置。
+    :type lang_manager: LangManager
+    :param config_manager: 配置管理器，用于管理应用配置。
+    :type config_manager: ConfigManager
+    :param table: 主表格界面对象。
+    :type table: QTableWidget
     """
+    status_updated = pyqtSignal(str)
+    filter_updated = pyqtSignal()
+    color_updated = pyqtSignal(list, dict)
 
-    def __init__(self, main_window: ConfigCenterComparer):
+    def __init__(self,
+                 lang_manager: LangManager,
+                 config_manager: ConfigManager,
+                 table: QTableWidget):
+        super().__init__()
+        self.lang_manager = lang_manager
+        self.lang_manager.lang_updated.connect(self.update_lang)
+        self.config_manager = config_manager
+        self.table = table
+        self.initUI()
+
+    def initUI(self) -> None:
         """
-        初始化 `ActionSkip` 类的实例。
+        初始化用户界面组件。
 
-        此方法负责设置界面元素，并绑定跳过按钮的动作。
-
-        :param main_window: 主窗口对象，用于访问和操作界面元素。
-        :type main_window: ConfigCenterComparer
+        :rtype: None
+        :return: 无返回值。
         """
-        self.main_window = main_window
-        self.table = self.main_window.get_elements('table')
-        self.filter_bar = self.main_window.get_elements('filter_bar')
-        self.label_status = self.main_window.get_elements('label_status')
-        self.lang = self.main_window.get_elements('lang')
-
-        self.action_skip = QAction(QIcon(get_resource_path('media/icons8-do-not-disturb-26.png')), self.lang['ui.action_skip_1'], self.main_window)
+        self.action_skip = QAction(QIcon(get_resource_path('media/icons8-do-not-disturb-26.png')), 'Skip')
         self.action_skip.setShortcut('F4')
-        self.action_skip.setStatusTip(self.lang['ui.action_skip_2'])
         self.action_skip.triggered.connect(self.skip_items)
+        self.update_lang()
+
+    def update_lang(self) -> None:
+        """
+        更新界面语言设置。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.lang = self.lang_manager.get_lang()
+        self.action_skip.setText(self.lang['ui.action_skip_1'])
+        self.action_skip.setStatusTip(self.lang['ui.action_skip_2'])
 
     def skip_items(self) -> None:
         """
-        执行跳过选中配置项的动作。
+        执行忽略选中项目的操作。
 
-        此方法读取当前选中的配置项，并将其添加到跳过列表中。同时更新状态栏的信息。
+        此方法负责更新忽略列表，并将其写入配置文件。同时更新配置管理器中的配置，并重新应用过滤器。
 
-        :return: 无返回值。
         :rtype: None
+        :return: 无返回值。
         """
-        config_main = self.main_window.get_elements('config_main')
-        config_connection = self.main_window.get_elements('config_connection')
-
         try:
-            # 读取配置和忽略列表
-            skip_list = read_file_to_list(CONFIG_SKIP_PATH) or []
-
-            # 更新忽略列表并写入文件
-            for item in self.table.selectedItems():
-                row = item.row()
-                self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "yes")
-                self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])
-                skip_list.append(f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}")
-                # 应用颜色。
-                if config_main.get('color_set', 'ON') == 'ON':
-                    self.table.apply_color_to_table([row], config_connection)
-            write_list_to_file(CONFIG_SKIP_PATH, set(skip_list))
-
+            updated_skip_list = self.update_skip_list_and_apply_color()
+            # 写入到配置文件
+            write_list_to_file(CONFIG_SKIP_PATH, updated_skip_list)
+            # 更新配置管理器中的配置
+            self.config_manager.update_skip_list(updated_skip_list)
             # 重新应用过略器
-            self.filter_bar.filter_table()
-            self.label_status.setText(self.lang['ui.action_skip_3'])
+            self.filter_updated.emit()
+            # 发送到状态栏
+            self.status_updated.emit(self.lang['ui.action_skip_3'])
+            logger.info(f"Items skipped. Skip list length: {len(updated_skip_list)}")
         except Exception:
-            logger.exception(f"An error occurred during skip items")
-            self.label_status.setText(self.lang['label_status_error'])
+            logger.exception("Error occurred while skipping items")
+            self.status_updated.emit(self.lang['label_status_error'])
+
+    def update_skip_list_and_apply_color(self) -> List[str]:
+        """
+        更新忽略列表并应用颜色。
+
+        此方法遍历选中的项目，将它们添加到忽略列表，并应用配置的颜色设置。
+
+        :rtype: List[str]
+        :return: 更新后的忽略列表。
+        """
+        # 获取配置
+        config_main = self.config_manager.get_config_main()
+        config_connection = self.config_manager.get_config_connection()
+        skip_list = self.config_manager.get_skip_list()
+
+        for item in self.table.selectedItems():
+            row = item.row()
+            self.update_table_item(row)
+            skip_list.append(f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}")
+            if config_main.get('color_set', 'ON') == 'ON':
+                self.color_updated.emit([row], config_connection)
+
+        return list(set(skip_list))
+
+    def update_table_item(self, row: int) -> None:
+        """
+        更新表格中指定行的项目。
+
+        此方法设置指定行的项目为“已忽略”。
+
+        :param row: 要更新的行。
+        :type row: int
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.UserRole, "yes")
+        self.table.item(row, COL_INFO['skip']['col']).setData(Qt.DisplayRole, self.lang['ui.action_start_12'])

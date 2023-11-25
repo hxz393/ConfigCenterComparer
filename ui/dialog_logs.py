@@ -18,7 +18,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QColor, QTextCharFormat, QTextCursor, QIcon
 from PyQt5.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QPushButton, QHBoxLayout, QComboBox, QLabel
 
-from config.settings import GITHUB_URL, LOG_PATH, LOG_COLORS, LOG_DEFAULT_LEVEL, LOG_LINES, LOG_UPDATE_TIME
+from config.settings import GITHUB_URL, LOG_PATH, LOG_COLORS, LOG_DEFAULT_LEVEL, LOG_LINES, LOG_UPDATE_RATE
 from lib.get_resource_path import get_resource_path
 from lib.write_list_to_file import write_list_to_file
 from ui.lang_manager import LangManager
@@ -41,8 +41,6 @@ class DialogLogs(QDialog):
 
     def __init__(self, lang_manager: LangManager):
         super().__init__(flags=Qt.Dialog | Qt.WindowCloseButtonHint)
-        # 设置对话框为非模态。或者设置标记 Qt.NonModal
-        self.setModal(False)
         self.lang_manager = lang_manager
         self.lang_manager.lang_updated.connect(self.update_lang)
         self.initUI()
@@ -121,8 +119,8 @@ class DialogLogs(QDialog):
         self.label.setText(self.lang['ui.dialog_logs_2'])
         self.feedback_button.setText(self.lang['ui.dialog_logs_4'])
         self.clear_button.setText(self.lang['ui.dialog_logs_5'])
-        self.refresh_button.setText(self.lang['ui.dialog_logs_7'])
         self.close_button.setText(self.lang['ui.dialog_logs_6'])
+        self.refresh_button.setText(self.lang['ui.dialog_logs_7'])
 
     def load_logs(self) -> None:
         """
@@ -154,6 +152,7 @@ class DialogLogs(QDialog):
         try:
             self.text_edit.clear()
             write_list_to_file(LOG_PATH, [])
+            logger.info(f"All logs gone")
         except Exception:
             logger.exception("Error clearing logs")
             self.status_updated.emit(self.lang['label_status_error'])
@@ -190,7 +189,12 @@ class DialogLogs(QDialog):
         :rtype: None
         :return: 无返回值。
         """
-        self.update_timer.start(LOG_UPDATE_TIME) if self.refresh_button.isChecked() else self.update_timer.stop()
+        if self.refresh_button.isChecked():
+            self.update_timer.start(LOG_UPDATE_RATE)
+            logger.info("tail -f run.log")
+        else:
+            self.update_timer.stop()
+            logger.info("break `tail -f run.log`")
 
     @staticmethod
     def _read_logs_file() -> str:
@@ -275,6 +279,7 @@ class DialogLogs(QDialog):
             new_cursor = self.text_edit.textCursor()
             new_cursor.setPosition(min(current_position, len(self.text_edit.toPlainText())))
             self.text_edit.setTextCursor(new_cursor)
+            logger.info(f"Filtered level of logs: {selected_level}")
         except Exception:
             logger.exception("Error filtering logs")
             self.status_updated.emit(self.lang['label_status_error'])
@@ -335,6 +340,7 @@ class DialogLogs(QDialog):
         """
         try:
             webbrowser.open(f'{GITHUB_URL}/issues')
+            logger.info("View Github")
         except Exception:
             logger.exception("Failed to open GitHub URL")
             self.status_updated.emit(self.lang['label_status_error'])

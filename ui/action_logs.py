@@ -38,9 +38,6 @@ class ActionLogs(QObject):
         # 实例化语言管理类
         self.lang_manager = lang_manager
         self.lang_manager.lang_updated.connect(self.update_lang)
-        # 实例化日志查看窗口，使其可以独立运行。
-        self.dialog_logs = DialogLogs(self.lang_manager)
-        self.dialog_logs.status_updated.connect(self.forward_status)
         # 连接关闭信号和关闭日志窗口方法，在主窗口中调用。
         self.close_dialog_signal.connect(self.close_dialog)
         self.initUI()
@@ -77,7 +74,10 @@ class ActionLogs(QObject):
         """
         try:
             # 实例化显示方式，非阻塞调用。exec_()为阻塞调用。
+            self.dialog_logs = DialogLogs(self.lang_manager)
+            self.dialog_logs.status_updated.connect(self.forward_status)
             self.dialog_logs.show()
+            logger.info("Opening the logs dialog")
         except Exception:
             logger.exception(f"An error occurred while opening the logs dialog")
             self.status_updated.emit(self.lang['label_status_error'])

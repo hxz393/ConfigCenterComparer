@@ -1,9 +1,8 @@
 """
-这是一个用于处理配置中心比较结果的Python模块，主要用于管理和展示配置中心数据的表格界面。
+此文件定义了 TableMain 类，一个基于 PyQt5 的 QTableWidget 的高级实现。
 
-此模块定义了`TableMain`类，用于创建和管理配置中心比较结果的表格界面。它提供了丰富的功能，包括表格初始化、行列管理、右键菜单功能、以及颜色应用等。
-
-此类的主要目的是提供一个交互式且用户友好的界面，用于展示和操作配置中心的数据比较结果。
+TableMain 类主要用于显示和管理表格数据，提供了多种扩展功能，包括语言国际化支持、动态配置管理、右键菜单操作等。
+该类与多个辅助类（如 LangManager 和 ConfigManager）集成，实现了复杂的功能逻辑。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -11,47 +10,124 @@
 """
 
 import logging
-from typing import List, Union, Any, Optional, Dict
+from typing import List, Union, Optional, Dict
 
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QBrush, QColor
+from PyQt5.QtCore import Qt, QPoint, pyqtSignal
+from PyQt5.QtGui import QBrush, QColor, QKeyEvent
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QMenu, QAction, QHeaderView
 
-from ConfigCenterComparer import ConfigCenterComparer
 from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_EMPTY
+from ui.action_copy import ActionCopy
+from ui.action_save import ActionSave
+from ui.action_skip import ActionSkip
+from ui.action_unskip import ActionUnskip
+from ui.config_manager import ConfigManager
+from ui.lang_manager import LangManager
 
 logger = logging.getLogger(__name__)
 
 
 class TableMain(QTableWidget):
     """
-    创建和管理配置中心比较结果的表格界面。
+    主表格类，用于展示和管理数据行。
 
-    此类封装了配置中心数据比较结果表格的创建和管理逻辑，包括表格的初始化、行列的管理、右键菜单的功能实现，以及颜色的应用等。
+    此类继承自 PyQt5 的 QTableWidget，提供了丰富的数据展示和管理功能。包括但不限于数据的展示、行的颜色标记、右键菜单功能以及快捷键支持。
+    通过与 LangManager 和 ConfigManager 的集成，支持动态语言切换和配置管理。
 
-    :param main_window: 配置中心比较器的主窗口对象。
-    :type main_window: ConfigCenterComparer
-    :param parent: 此表格的父对象。
-    :type parent: QWidget, optional
+    :param lang_manager: 用于管理界面语言的 LangManager 实例。
+    :type lang_manager: LangManager
+    :param config_manager: 用于管理配置的 ConfigManager 实例。
+    :type config_manager: ConfigManager
+
+    :author: assassing
+    :contact: https://github.com/hxz393
+    :copyright: Copyright 2023, hxz393. 保留所有权利。
     """
+    status_updated = pyqtSignal(str)
+    filter_updated = pyqtSignal()
 
-    def __init__(self, main_window: ConfigCenterComparer, parent=None):
+    def __init__(self,
+                 lang_manager: LangManager,
+                 config_manager: ConfigManager):
+        super().__init__()
+        self.lang_manager = lang_manager
+        self.lang_manager.lang_updated.connect(self.update_lang)
+        self.config_manager = config_manager
+        # 实例化用到的组件
+        self.actionCopy = ActionCopy(self.lang_manager, self)
+        self.actionSave = ActionSave(self.lang_manager, self)
+        self.actionSkip = ActionSkip(self.lang_manager, self.config_manager, self)
+        self.actionUnskip = ActionUnskip(self.lang_manager, self.config_manager, self)
+        # 手动连接实例化的组件信号到转发函数
+        self.actionCopy.status_updated.connect(self.forward_status)
+        self.actionSave.status_updated.connect(self.forward_status)
+        self.actionSkip.status_updated.connect(self.forward_status)
+        self.actionSkip.filter_updated.connect(self.forward_filter)
+        self.actionSkip.color_updated.connect(self.apply_color_to_table)
+        self.actionUnskip.status_updated.connect(self.forward_status)
+        self.actionUnskip.filter_updated.connect(self.forward_filter)
+        self.actionUnskip.color_updated.connect(self.apply_color_to_table)
+        self.initUI()
+
+    def initUI(self) -> None:
         """
-        初始化 `TableMain` 类的实例。
+        初始化用户界面。
 
-        此方法用于设置表格的初始配置，包括与主窗口的连接、状态标签、语言设置、列头配置、隐藏列和调整列的设置等。
+        此方法负责设置表格的基本属性，如列数、表头标签、选择行为等。还包括对特定列的隐藏和宽度调整策略的设置。
 
-        :param main_window: 配置中心比较器的主窗口对象，用于与主界面交互。
-        :type main_window: ConfigCenterComparer
-        :param parent: 此表格的父窗口对象，用于Qt的窗口继承和管理。
-        :type parent: QWidget, optional
+        :rtype: None
+        :return: 无返回值。
         """
-        super().__init__(parent)
+        # 先运行语言更新，里面有表头定义
+        self.update_lang()
+        self.hidden_cols = ["pro_time", "pre_time", "test_time", "dev_time"]
+        self.resize_cols = ["name", "group", "consistency", "skip"]
+        # 配置表格基本属性
+        self.setColumnCount(len(self.column_headers))
+        self.setHorizontalHeaderLabels(self.column_headers)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.setSelectionBehavior(QTableWidget.SelectItems)
+        # 隐藏垂直表头
+        self.verticalHeader().setVisible(False)
+        # 启用自动换行，没生效
+        self.setWordWrap(True)
+        self.setTextElideMode(Qt.ElideNone)
+        # 为表头视图设置上下文菜单事件
+        self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
+        self.horizontalHeader().customContextMenuRequested.connect(self._header_context_menu)
+        # 为表单设置上下文菜单事件
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._cell_context_menu)
+        # 隐藏指定列
+        [self.hideColumn(COL_INFO[i]['col']) for i in self.hidden_cols]
+        # 设置表宽度策略
+        self.set_header_resize()
 
-        self.main_window = main_window
-        self.label_status = self.main_window.get_elements('label_status')
-        self.lang = self.main_window.get_elements('lang')
+    def set_header_resize(self):
+        """
+        设置表头的列宽度和调整策略。
 
+        此方法负责定义表头列的宽度调整策略和其他相关属性。它设置了表头列的默认宽度、是否可拖动以及列的自动调整策略。
+        例如，某些列被设置为根据内容自动调整宽度，而其他列则被设置为可伸缩以适应表格的大小。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        # 设置默认列宽度，列宽调整策略，列可拖动
+        self.horizontalHeader().setSectionsMovable(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setMinimumSectionSize(100)
+        # 设置要自动调整宽度的列
+        [self.horizontalHeader().setSectionResizeMode(COL_INFO[i]['col'], QHeaderView.ResizeToContents) for i in self.resize_cols]
+
+    def update_lang(self) -> None:
+        """
+        更新界面语言设置。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.lang = self.lang_manager.get_lang()
         self.column_headers = [
             self.lang['ui.table_main_1'],
             self.lang['ui.table_main_2'],
@@ -67,61 +143,10 @@ class TableMain(QTableWidget):
             self.lang['ui.table_main_5'],
             self.lang['ui.table_main_6'],
         ]
-        self.hidden_cols = ["pro_time", "pre_time", "test_time", "dev_time"]
-        self.resize_cols = ["name", "group", "consistency", "skip"]
+        # 重新应用到表头
+        self.setHorizontalHeaderLabels(self.column_headers)
 
-        self._setup_table()
-
-    def _setup_table(self) -> None:
-        """
-        配置表格的基本属性和行为。
-
-        此方法用于初始化表格的列数、表头、选择行为、上下文菜单等基本属性和行为。
-        """
-        try:
-            # 配置表格基本属性
-            self.setColumnCount(len(self.column_headers))
-            self.setHorizontalHeaderLabels(self.column_headers)
-            self.setEditTriggers(QTableWidget.NoEditTriggers)
-            self.setSelectionBehavior(QTableWidget.SelectItems)
-            # 隐藏垂直表头
-            self.verticalHeader().setVisible(False)
-            # 启用自动换行，没生效
-            self.setWordWrap(True)
-            self.setTextElideMode(Qt.ElideNone)
-
-            # 为表头视图设置上下文菜单事件
-            self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
-            self.horizontalHeader().customContextMenuRequested.connect(self._header_context_menu)
-            # 为表单设置上下文菜单事件
-            self.setContextMenuPolicy(Qt.CustomContextMenu)
-            self.customContextMenuRequested.connect(self._cell_context_menu)
-
-            # 隐藏指定列
-            [self.hideColumn(COL_INFO[i]['col']) for i in self.hidden_cols]
-            # 初始化列宽
-            self.set_header_resize()
-        except Exception:
-            logger.exception("Error occurred while setting up the table")
-
-    def set_header_resize(self) -> None:
-        """
-        设置表头的默认列宽和列宽调整策略。
-
-        此方法用于设置表格的列宽调整策略和默认列宽，以提供更好的用户体验。
-        """
-        try:
-            # 设置默认列宽度，列宽调整策略，列可拖动
-            self.horizontalHeader().setSectionsMovable(True)
-            self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-            self.horizontalHeader().setMinimumSectionSize(100)
-            # 设置要自动调整宽度的列
-            [self.horizontalHeader().setSectionResizeMode(COL_INFO[i]['col'], QHeaderView.ResizeToContents) for i in self.resize_cols]
-        except Exception:
-            logger.exception("Error occurred while resizing table headers")
-            self.label_status.setText(self.lang['label_status_error'])
-
-    def keyPressEvent(self, event) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """
         处理键盘事件。
 
@@ -129,9 +154,12 @@ class TableMain(QTableWidget):
 
         :param event: 键盘事件对象。
         :type event: QKeyEvent
+
+        :rtype: None
+        :return: 无返回值。
         """
         if event.key() == Qt.Key_C and (event.modifiers() & Qt.ControlModifier):
-            self.main_window.ActionCopy.copy_selected()
+            self.actionCopy.action_copy()
         else:
             super().keyPressEvent(event)
 
@@ -141,18 +169,21 @@ class TableMain(QTableWidget):
 
         :param pos: 右键点击的位置。
         :type pos: QPoint
+
+        :rtype: None
+        :return: 无返回值。
         """
         menu = QMenu(self)
-        menu.addAction(self.main_window.ActionCopy.action_copy)
+        menu.addAction(self.actionCopy.action_copy)
         separator = QAction(menu)
         separator.setSeparator(True)
         menu.addAction(separator)
-        menu.addAction(self.main_window.ActionSkip.action_skip)
-        menu.addAction(self.main_window.ActionUnskip.action_unskip)
+        menu.addAction(self.actionSkip.action_skip)
+        menu.addAction(self.actionUnskip.action_unskip)
         sep = QAction(menu)
         sep.setSeparator(True)
         menu.addAction(sep)
-        menu.addAction(self.main_window.ActionSave.action_save)
+        menu.addAction(self.actionSave.action_save)
         menu.exec_(self.viewport().mapToGlobal(pos))
 
     def _header_context_menu(self, pos: QPoint) -> None:
@@ -161,6 +192,9 @@ class TableMain(QTableWidget):
 
         :param pos: 右键点击的位置。
         :type pos: QPoint
+
+        :rtype: None
+        :return: 无返回值。
         """
         menu = QMenu(self)
         # 动态创建一个菜单项，用于隐藏/显示列
@@ -179,6 +213,9 @@ class TableMain(QTableWidget):
         根据用户选择，切换列的可见性。
 
         此方法用于根据用户在上下文菜单中的选择，显示或隐藏特定的列。
+
+        :rtype: None
+        :return: 无返回值。
         """
         action = self.sender()
         if isinstance(action, QAction):
@@ -192,8 +229,11 @@ class TableMain(QTableWidget):
         """
         向表格中添加一行数据。
 
-        :param data: 要添加的数据列表，每个元素代表一列的数据。
+        :param data: 要添加的数据列表，每个元素是一个列表，第一个元素代表显示的字符串，第二个元素代表附加数据。
         :type data: List[List[str]]
+
+        :rtype: None
+        :return: 无返回值。
         """
         row_position = 0
         try:
@@ -202,27 +242,48 @@ class TableMain(QTableWidget):
             # 插入最后一行
             self.insertRow(row_position)
             # 插入单元格数据
-            for column, item_data in enumerate(data):
-                # 默认设置显示字符串，也叫 Qt.DisplayRole。获取方法item.text() 或 item.data(Qt.DisplayRole)，设置方法
-                item = QTableWidgetItem(str(item_data[0]))
-                # 设置实际数据，也叫 Qt.UserRole。获取方法 item.data(Qt.UserRole)
-                item.setData(Qt.UserRole, item_data[1])
-                # 设置单元格不可编辑状态
-                item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-                # 正常表格插入方法
-                self.setItem(row_position, column, item)
+            self._fill_row_data(row_position, data)
         except Exception:
-            logger.exception("Error occurred while adding a new row")
+            logger.exception(f"Error occurred while adding a new row at position {row_position}")
             self.removeRow(row_position)
 
-    def apply_color_to_table(self, rows: List[int], config_connection: Dict[str, Any]) -> None:
+    def _fill_row_data(self,
+                       row_position: int,
+                       data: List[List[str]]) -> None:
+        """
+        填充指定行的数据。
+
+        :param row_position: 行位置
+        :param data: 行数据
+        :type row_position: int
+        :type data: List[List[str]]
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        for column, (display_text, user_data) in enumerate(data):
+            # 默认设置显示字符串，也叫 Qt.DisplayRole。获取方法item.text() 或 item.data(Qt.DisplayRole)
+            item = QTableWidgetItem(str(display_text))
+            # 设置实际数据，也叫 Qt.UserRole。获取方法 item.data(Qt.UserRole)
+            item.setData(Qt.UserRole, user_data)
+            # 设置单元格不可编辑状态
+            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            # 正常表格插入方法
+            self.setItem(row_position, column, item)
+
+    def apply_color_to_table(self,
+                             rows: List[int],
+                             config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]]) -> None:
         """
         根据一致性和跳过状态给表格行应用颜色。
 
         :param config_connection: 数据库连接配置字典。
-        :type config_connection: Dict[str, Any]
+        :type config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]]
         :param rows: 要应用颜色的行号列表。
         :type rows: List[int]
+
+        :rtype: None
+        :return: 无返回值。
         """
         environments = ['PRO', 'PRE', 'TEST', 'DEV']
         check_none_value_column_status = {
@@ -237,25 +298,28 @@ class TableMain(QTableWidget):
 
                 # 忽略状态为是时设置颜色
                 if skip_data == 'yes':
-                    self.apply_color(row, COLOR_SKIP)
+                    self._apply_color(row, COLOR_SKIP)
                     continue
 
                 # 根据一致性值设置颜色
                 if consistency_data == 'fully':
-                    self.apply_color(row, COLOR_CONSISTENCY_FULLY)
+                    self._apply_color(row, COLOR_CONSISTENCY_FULLY)
                 elif consistency_data == 'partially':
-                    self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
+                    self._apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
 
                 # 遍历指定列检查空值
                 # for column in range(self.columnCount()):
                 for column in check_none_value_column_list:
                     if self.item(row, column).text() == 'None':
-                        self.apply_color(row, COLOR_EMPTY, column)
+                        self._apply_color(row, COLOR_EMPTY, column)
         except Exception:
             logger.exception("Exception in apply_color_to_table method")
-            self.label_status.setText(self.lang['label_status_error'])
+            self.status_updated.emit(self.lang['label_status_error'])
 
-    def apply_color(self, row: int, color: str, column: Optional[int] = None) -> None:
+    def _apply_color(self,
+                     row: int,
+                     color: str,
+                     column: Optional[int] = None) -> None:
         """
         为指定的行或单元格应用颜色。
 
@@ -265,6 +329,9 @@ class TableMain(QTableWidget):
         :type color: str
         :param column: 可选，指定要着色的列索引，如果未指定，则对整行应用颜色。
         :type column: int, optional
+
+        :rtype: None
+        :return: 无返回值。
         """
         try:
             if column is not None:
@@ -274,9 +341,12 @@ class TableMain(QTableWidget):
                     self._apply_color_to_cell(row, color, col)
         except Exception:
             logger.exception("Error occurred while applying color to a cell")
-            self.label_status.setText(self.lang['label_status_error'])
+            self.status_updated.emit(self.lang['label_status_error'])
 
-    def _apply_color_to_cell(self, row: int, color: str, column: int) -> None:
+    def _apply_color_to_cell(self,
+                             row: int,
+                             color: str,
+                             column: int) -> None:
         """
         为特定单元格应用颜色。
 
@@ -288,6 +358,9 @@ class TableMain(QTableWidget):
         :type column: int
         :param color: 要应用的颜色。
         :type color: str
+
+        :rtype: None
+        :return: 无返回值。
         """
         if color:
             color_brush = QBrush(QColor(color))
@@ -298,6 +371,9 @@ class TableMain(QTableWidget):
         清空表格中的所有行。
 
         此方法用于清除表格中的所有数据，通常在数据更新或重置时使用。
+
+        :rtype: None
+        :return: 无返回值。
         """
         try:
             # 禁用更新以提高性能
@@ -306,10 +382,27 @@ class TableMain(QTableWidget):
             self.clearContents()
             # 将行数设置为0，从而删除所有行
             self.setRowCount(0)
-            # 重新启用更新
-            self.setUpdatesEnabled(True)
-        except Exception as e:
-            logger.exception("Error occurred while clearing the table: {}".format(str(e)))
-            self.label_status.setText(self.lang['label_status_error'])
+        except Exception:
+            logger.exception("Error occurred while clearing the table.")
+            self.status_updated.emit(self.lang['label_status_error'])
+        finally:
             # 确保即使发生错误也要重新启用更新
             self.setUpdatesEnabled(True)
+
+    def forward_status(self, message: str) -> None:
+        """
+        用于转发状态信号。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.status_updated.emit(message)
+
+    def forward_filter(self) -> None:
+        """
+        用于转发过滤信号。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.filter_updated.emit()

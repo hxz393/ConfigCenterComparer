@@ -49,7 +49,8 @@ class DialogSettingsConnection(QDialog):
         # 两个配置都要
         self.config_main = self.config_manager.get_config_main()
         self.config_connection = self.config_manager.get_config_connection()
-
+        # 获取语言字典
+        self.lang = self.lang_manager.get_lang()
         self.initUI()
 
     def initUI(self):
@@ -63,8 +64,6 @@ class DialogSettingsConnection(QDialog):
         :return: 无返回值。
         :rtype: None
         """
-        # 定义字典
-        self.lang = self.lang_manager.get_lang()
         # 主窗口设置
         self.setWindowTitle(self.lang['ui.dialog_settings_connection_1'])
         self.setWindowIcon(QIcon(get_resource_path('media/icons8-database-administrator-26')))
@@ -347,6 +346,7 @@ class DialogSettingsConnection(QDialog):
                 self.config_manager.update_config_connection(self.config_connection)
                 self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
                 super().accept()
+                logger.info("Settings saved")
             else:
                 message_show('Critical', self.lang['ui.dialog_settings_main_14'])
         except Exception:

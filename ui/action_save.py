@@ -1,7 +1,8 @@
 """
-这是一个用于配置中心比较器的辅助模块，主要提供数据保存功能。
+此模块提供了用于处理表格数据保存功能的类。
 
-本模块包含`ActionSave`类，负责处理来自配置中心比较器的数据的保存操作。它允许用户将表格数据保存到CSV或JSON文件中。
+类 `ActionSave` 封装了与数据保存相关的所有操作，包括初始化界面、更新语言设置以及执行保存动作。
+此类是与 PyQt5 相关的 GUI 操作的一部分，用于实现用户的数据保存需求。
 
 :author: assassing
 :contact: https://github.com/hxz393
@@ -9,51 +10,74 @@
 """
 
 import logging
+import os
 from typing import Dict, Optional
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction, QFileDialog
+from PyQt5.QtWidgets import QAction, QFileDialog, QTableWidget
 
-from ConfigCenterComparer import ConfigCenterComparer
 from lib.get_resource_path import get_resource_path
 from module.save_data_to_file import save_data_to_file
-from .message_show import message_show
+from ui.lang_manager import LangManager
+from ui.message_show import message_show
 
 logger = logging.getLogger(__name__)
 
 
-class ActionSave:
+class ActionSave(QObject):
     """
-    处理配置中心比较器中数据的保存操作的类。
+    实现表格数据的保存功能。
 
-    此类提供了用户界面操作，允许用户将表格数据保存为CSV或JSON文件。它还包括错误处理和状态更新。
+    此类用于在表格界面中提供保存操作，允许用户将表格数据保存到文件。
 
-    :param main_window: 配置中心比较器的主窗口对象。
-    :type main_window: ConfigCenterComparer
+    :param lang_manager: 用于管理语言设置的对象。
+    :type lang_manager: LangManager
+    :param table: 表格对象，用于操作表格数据。
+    :type table: QTableWidget
     """
+    status_updated = pyqtSignal(str)
 
-    def __init__(self, main_window: ConfigCenterComparer):
+    def __init__(self,
+                 lang_manager: LangManager,
+                 table: QTableWidget):
+        super().__init__()
+        self.lang_manager = lang_manager
+        self.lang_manager.lang_updated.connect(self.update_lang)
+        self.table = table
+        self.initUI()
+
+    def initUI(self) -> None:
         """
-        初始化保存操作。
+        初始化用户界面组件。
 
-        :param main_window: 配置中心比较器的主窗口对象。
-        :type main_window: ConfigCenterComparer
+        :rtype: None
+        :return: 无返回值。
         """
-        self.main_window = main_window
-        self.table = self.main_window.get_elements('table')
-        self.label_status = self.main_window.get_elements('label_status')
-        self.lang = self.main_window.get_elements('lang')
-
-        self.action_save = QAction(QIcon(get_resource_path('media/icons8-save-26.png')), self.lang['ui.action_save_1'], self.main_window)
+        self.action_save = QAction(QIcon(get_resource_path('media/icons8-save-26.png')), 'Save1')
         self.action_save.setShortcut('Ctrl+S')
-        self.action_save.setStatusTip(self.lang['ui.action_save_2'])
         self.action_save.triggered.connect(self.save_file)
+        self.update_lang()
+
+    def update_lang(self) -> None:
+        """
+        更新界面语言设置。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        self.lang = self.lang_manager.get_lang()
+        self.action_save.setText(self.lang['ui.action_save_1'])
+        self.action_save.setStatusTip(self.lang['ui.action_save_2'])
 
     def save_file(self) -> None:
         """
         触发保存文件的操作。
 
         此方法弹出文件保存对话框，允许用户选择保存格式和位置，并执行保存操作。
+
+        :rtype: None
+        :return: 无返回值。
         """
         try:
             table_data = self._extract_table_data()
@@ -61,18 +85,19 @@ class ActionSave:
                 message_show('Critical', self.lang['ui.action_save_8'])
                 return None
 
-            file_name, file_type = QFileDialog.getSaveFileName(self.main_window, self.lang['ui.action_save_3'], "", "CSV Files (*.csv);;JSON Files (*.json)", options=QFileDialog.Options())
+            file_name, file_type = QFileDialog.getSaveFileName(None, self.lang['ui.action_save_3'], "", "CSV Files (*.csv);;JSON Files (*.json)", options=QFileDialog.Options())
             if not file_name or not file_type:
                 return None
 
             save_result = save_data_to_file(file_name, file_type, table_data)
             if save_result:
-                self.label_status.setText(self.lang['ui.action_save_5'])
+                self.status_updated.emit(self.lang['ui.action_save_5'])
+                logger.info(f"File saved to: '{file_name}', File size: {os.path.getsize(file_name):,} Bytes")
             else:
                 message_show('Critical', self.lang['ui.action_save_7'])
         except Exception:
-            logger.exception(f"Error saving file")
-            self.label_status.setText(self.lang['label_status_error'])
+            logger.exception("Error saving file")
+            self.status_updated.emit(self.lang['label_status_error'])
 
     def _extract_table_data(self) -> Optional[Dict[int, Dict[str, str]]]:
         """

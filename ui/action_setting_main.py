@@ -72,6 +72,7 @@ class ActionSettingMain(QObject):
             self.dialog_settings_main = DialogSettingsMain(self.lang_manager, self.config_manager)
             self.dialog_settings_main.status_updated.connect(self.forward_status)
             self.dialog_settings_main.exec_()
+            logger.info("Opening the settings dialog")
         except Exception:
             logger.exception(f"An error occurred while opening the settings dialog")
             self.status_updated.emit(self.lang['label_status_error'])
