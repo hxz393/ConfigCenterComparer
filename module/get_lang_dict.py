@@ -13,7 +13,7 @@ import os
 from typing import Dict
 
 from config.lang_dict_all import LANG_DICTS
-from module.read_config import read_config
+from module.read_config_all import read_config_all
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def get_lang_dict() -> Dict[str, str]:
     >>> get_lang_dict()
     """
     try:
-        config_main, _ = read_config()
+        config_main, _, _ = read_config_all()
         return LANG_DICTS[config_main.get('lang', 'English')]
     except Exception:
         logger.exception("Failed to get language dictionary")

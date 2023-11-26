@@ -69,7 +69,6 @@ class ActionAbout(QObject):
         try:
             dialog = DialogAbout(self.lang_manager)
             dialog.exec_()
-            logger.info("Opening the about dialog")
         except Exception:
             logger.exception("An error occurred while opening the about dialog")
             self.status_updated.emit(self.lang['label_status_error'])

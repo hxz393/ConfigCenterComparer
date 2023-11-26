@@ -17,6 +17,7 @@ from PyQt5.QtGui import QBrush, QColor, QKeyEvent
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QMenu, QAction, QHeaderView
 
 from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_EMPTY
+from lib.log_time import log_time
 from ui.action_copy import ActionCopy
 from ui.action_save import ActionSave
 from ui.action_skip import ActionSkip
@@ -44,7 +45,7 @@ class TableMain(QTableWidget):
     :copyright: Copyright 2023, hxz393. 保留所有权利。
     """
     status_updated = pyqtSignal(str)
-    filter_updated = pyqtSignal()
+    filter_updated = pyqtSignal(list)
 
     def __init__(self,
                  lang_manager: LangManager,
@@ -145,6 +146,48 @@ class TableMain(QTableWidget):
         ]
         # 重新应用到表头
         self.setHorizontalHeaderLabels(self.column_headers)
+        # 定义数据和显示映射的字典
+        consistency_status_mapping = {
+            "inconsistent": self.lang['ui.action_start_8'],
+            "fully": self.lang['ui.action_start_9'],
+            "partially": self.lang['ui.action_start_10'],
+            "unknown": self.lang['ui.action_start_13'],
+        }
+        skip_status_mapping = {
+            "no": self.lang['ui.action_start_11'],
+            "yes": self.lang['ui.action_start_12'],
+            "unknown": self.lang['ui.action_start_13'],
+        }
+        for row in range(self.rowCount()):
+            # 更新忽略状态文字
+            self._update_item_text(row, "skip", skip_status_mapping)
+            # 更新一致性状态文字
+            self._update_item_text(row, "consistency", consistency_status_mapping)
+
+    def _update_item_text(self,
+                          row: int,
+                          user_data_key: str,
+                          text_mapping: Dict[str, str]) -> None:
+        """
+        根据提供的文本映射更新指定行的项文本。
+
+        此方法用于更新表格或列表中特定行的文本。它根据用户数据键（user_data_key）获取对应行的项，然后根据提供的文本映射（text_mapping）更新该项的文本。
+
+        :param row: 要更新的行索引。
+        :type row: int
+        :param user_data_key: 用于获取项的用户数据键。
+        :type user_data_key: str
+        :param text_mapping: 用户数据到文本的映射字典。
+        :type text_mapping: Dict[str, str]
+
+        :return: 无返回值。
+        :rtype: None
+        """
+        item = self.item(row, COL_INFO[user_data_key]['col'])
+        if item is not None:
+            user_data = item.data(Qt.UserRole)
+            if user_data in text_mapping:
+                item.setText(text_mapping[user_data])
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """
@@ -271,8 +314,9 @@ class TableMain(QTableWidget):
             # 正常表格插入方法
             self.setItem(row_position, column, item)
 
+    @log_time
     def apply_color_to_table(self,
-                             rows: List[int],
+                             rows: Optional[List[int]],
                              config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]]) -> None:
         """
         根据一致性和跳过状态给表格行应用颜色。
@@ -280,46 +324,46 @@ class TableMain(QTableWidget):
         :param config_connection: 数据库连接配置字典。
         :type config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]]
         :param rows: 要应用颜色的行号列表。
-        :type rows: List[int]
+        :type rows: Optional[List[int]]
 
         :rtype: None
         :return: 无返回值。
         """
         environments = ['PRO', 'PRE', 'TEST', 'DEV']
-        check_none_value_column_status = {
-            COL_INFO[f'{env.lower()}_value']['col']: config_connection[f'{env}_CONFIG']['mysql_on']
-            for env in environments
-        }
-        check_none_value_column_list = [column for column, status in check_none_value_column_status.items() if status]
         try:
-            for row in rows:
+            check_none_value_column_status = {
+                COL_INFO[f'{env.lower()}_value']['col']: config_connection[f'{env}_CONFIG']['mysql_on']
+                for env in environments
+            }
+            check_none_value_column_list = [column for column, status in check_none_value_column_status.items() if status]
+            for row in rows if rows and isinstance(rows, list) else range(self.rowCount()):
                 consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
                 skip_data = self.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
 
                 # 忽略状态为是时设置颜色
                 if skip_data == 'yes':
-                    self._apply_color(row, COLOR_SKIP)
+                    self.apply_color(row, COLOR_SKIP)
                     continue
 
                 # 根据一致性值设置颜色
                 if consistency_data == 'fully':
-                    self._apply_color(row, COLOR_CONSISTENCY_FULLY)
+                    self.apply_color(row, COLOR_CONSISTENCY_FULLY)
                 elif consistency_data == 'partially':
-                    self._apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
+                    self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
 
                 # 遍历指定列检查空值
                 # for column in range(self.columnCount()):
                 for column in check_none_value_column_list:
                     if self.item(row, column).text() == 'None':
-                        self._apply_color(row, COLOR_EMPTY, column)
+                        self.apply_color(row, COLOR_EMPTY, column)
         except Exception:
             logger.exception("Exception in apply_color_to_table method")
             self.status_updated.emit(self.lang['label_status_error'])
 
-    def _apply_color(self,
-                     row: int,
-                     color: str,
-                     column: Optional[int] = None) -> None:
+    def apply_color(self,
+                    row: int,
+                    color: str,
+                    column: Optional[int] = None) -> None:
         """
         为指定的行或单元格应用颜色。
 
@@ -334,37 +378,15 @@ class TableMain(QTableWidget):
         :return: 无返回值。
         """
         try:
-            if column is not None:
-                self._apply_color_to_cell(row, color, column)
+            color_brush = QBrush(QColor(color))
+            if column:
+                self.item(row, column).setBackground(color_brush)
             else:
                 for col in range(self.columnCount()):
-                    self._apply_color_to_cell(row, color, col)
+                    self.item(row, col).setBackground(color_brush)
         except Exception:
             logger.exception("Error occurred while applying color to a cell")
             self.status_updated.emit(self.lang['label_status_error'])
-
-    def _apply_color_to_cell(self,
-                             row: int,
-                             color: str,
-                             column: int) -> None:
-        """
-        为特定单元格应用颜色。
-
-        此方法用于给指定行和列的单元格应用背景色。
-
-        :param row: 行索引。
-        :type row: int
-        :param column: 列索引。
-        :type column: int
-        :param color: 要应用的颜色。
-        :type color: str
-
-        :rtype: None
-        :return: 无返回值。
-        """
-        if color:
-            color_brush = QBrush(QColor(color))
-            self.item(row, column).setBackground(color_brush)
 
     def clear(self) -> None:
         """
@@ -393,16 +415,22 @@ class TableMain(QTableWidget):
         """
         用于转发状态信号。
 
+        :param message: 要转发的消息。
+        :type message: str
+
         :rtype: None
         :return: 无返回值。
         """
         self.status_updated.emit(message)
 
-    def forward_filter(self) -> None:
+    def forward_filter(self, rows: List[int]) -> None:
         """
         用于转发过滤信号。
+
+        :param rows: 要转发的行列表。
+        :type rows: List[int]
 
         :rtype: None
         :return: 无返回值。
         """
-        self.filter_updated.emit()
+        self.filter_updated.emit(rows)

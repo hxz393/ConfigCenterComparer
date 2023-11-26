@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QAction
 from lib.get_resource_path import get_resource_path
 from ui.dialog_logs import DialogLogs
 from ui.lang_manager import LangManager
+from ui.global_signals import global_signals
 
 logger = logging.getLogger(__name__)
 
@@ -29,17 +30,18 @@ class ActionLogs(QObject):
 
     :param lang_manager: 语言管理器，用于更新动作的显示语言。
     :type lang_manager: LangManager
+    :param lang_manager: 语言管理器，用于更新动作的显示语言。
+    :type lang_manager: LangManager
     """
     status_updated = pyqtSignal(str)
-    close_dialog_signal = pyqtSignal()
 
-    def __init__(self, lang_manager: LangManager):
+    def __init__(self,
+                 lang_manager: LangManager):
         super().__init__()
         # 实例化语言管理类
         self.lang_manager = lang_manager
         self.lang_manager.lang_updated.connect(self.update_lang)
-        # 连接关闭信号和关闭日志窗口方法，在主窗口中调用。
-        self.close_dialog_signal.connect(self.close_dialog)
+
         self.initUI()
 
     def initUI(self) -> None:
@@ -77,7 +79,8 @@ class ActionLogs(QObject):
             self.dialog_logs = DialogLogs(self.lang_manager)
             self.dialog_logs.status_updated.connect(self.forward_status)
             self.dialog_logs.show()
-            logger.info("Opening the logs dialog")
+            # 连接全局信号，主窗口关闭时一并关闭。
+            global_signals.close_all.connect(self.close_dialog)
         except Exception:
             logger.exception(f"An error occurred while opening the logs dialog")
             self.status_updated.emit(self.lang['label_status_error'])
@@ -94,7 +97,10 @@ class ActionLogs(QObject):
 
     def forward_status(self, message: str) -> None:
         """
-        用于转发日志对话框中的信号。
+        用于转发状态信号。
+
+        :param message: 要转发的消息。
+        :type message: str
 
         :rtype: None
         :return: 无返回值。

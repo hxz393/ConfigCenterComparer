@@ -14,9 +14,8 @@ from PyQt5.QtCore import Qt, pyqtSignal, QObject
 from PyQt5.QtGui import QIcon, QBrush, QColor
 from PyQt5.QtWidgets import QAction, QTableWidget
 
-from config.settings import CONFIG_SKIP_PATH, COL_INFO, COLOR_DEFAULT
+from config.settings import COL_INFO, COLOR_DEFAULT
 from lib.get_resource_path import get_resource_path
-from lib.write_list_to_file import write_list_to_file
 from ui.config_manager import ConfigManager
 from ui.lang_manager import LangManager
 
@@ -35,7 +34,7 @@ class ActionUnskip(QObject):
     :type table: QTableWidget
     """
     status_updated = pyqtSignal(str)
-    filter_updated = pyqtSignal()
+    filter_updated = pyqtSignal(list)
     color_updated = pyqtSignal(list, dict)
 
     def __init__(self,
@@ -83,12 +82,10 @@ class ActionUnskip(QObject):
         """
         try:
             updated_skip_list = self.update_skip_list_and_apply_color()
-            # 写入到配置文件
-            write_list_to_file(CONFIG_SKIP_PATH, updated_skip_list)
             # 更新配置管理器中的配置
             self.config_manager.update_skip_list(updated_skip_list)
             # 重新应用过略器
-            self.filter_updated.emit()
+            self.filter_updated.emit([item.row() for item in self.table.selectedItems()])
             # 发送到状态栏
             self.status_updated.emit(self.lang['ui.action_unskip_3'])
             logger.info(f"Items unskipped. Skip list length: {len(updated_skip_list)}")

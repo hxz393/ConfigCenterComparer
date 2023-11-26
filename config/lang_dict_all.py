@@ -8,7 +8,6 @@ LANG_DICTS = {
         'main_3': '  &Edit  ',
         'main_4': ' &Options',
         'main_5': '  &Help  ',
-        'main_6': 'Toolbar',
         'label_status_error': 'Error occurred',
         'ui.action_exit_1': 'Quit',
         'ui.action_exit_2': 'Quit the application',
@@ -85,7 +84,6 @@ LANG_DICTS = {
         'ui.filter_bar_11': 'Entries',
         'ui.dialog_logs_1': 'View Logs',
         'ui.dialog_logs_2': 'Log Level:',
-        'ui.dialog_logs_3': 'All',
         'ui.dialog_logs_4': 'Feedback',
         'ui.dialog_logs_5': 'Clear',
         'ui.dialog_logs_6': 'Close',
@@ -103,7 +101,6 @@ LANG_DICTS = {
         'ui.dialog_settings_main_11': 'Confirm',
         'ui.dialog_settings_main_12': 'Cancel',
         'ui.dialog_settings_main_13': 'Configuration Saved Successfully!',
-        'ui.dialog_settings_main_14': 'Failed to Write Configuration File!',
         'ui.dialog_settings_main_15': 'Changing Language Requires Restart to Take Effect, Restart Now?',
         'ui.dialog_settings_main_16': 'Table Color Switch, turning off can enhance performance:',
         'ui.dialog_settings_connection_1': 'Database Configuration',
@@ -146,7 +143,7 @@ LANG_DICTS = {
                 &nbsp;&nbsp;ConfigCenterComparer was built using the following tools:
                 </p>
                 <p><b>&nbsp;&nbsp;Program：</b>Python 3.10.4</p>
-                <p><b>&nbsp;&nbsp;Interface：</b>PyQT 5.15.8</p>
+                <p><b>&nbsp;&nbsp;Interface：</b>PyQT 5.15.10</p>
                 <p><b>&nbsp;&nbsp;Icons：</b><a href='https://icons8.com/'>icons8.com</a></p>
                 """
     },
@@ -156,8 +153,7 @@ LANG_DICTS = {
         'main_3': '编辑(&E)',
         'main_4': '选项(&O)',
         'main_5': '帮助(&H)',
-        'main_6': '工具栏',
-        'label_status_error': 'Error occurred',
+        'label_status_error': '发生错误！',
         'ui.action_exit_1': '退出程序',
         'ui.action_exit_2': '立即退出程序',
         'ui.action_save_1': '导出列表',
@@ -233,7 +229,6 @@ LANG_DICTS = {
         'ui.filter_bar_11': '条配置',
         'ui.dialog_logs_1': '查看日志',
         'ui.dialog_logs_2': '日志等级：',
-        'ui.dialog_logs_3': '所有',
         'ui.dialog_logs_4': '提交反馈',
         'ui.dialog_logs_5': '清空',
         'ui.dialog_logs_6': '关闭',
@@ -251,7 +246,6 @@ LANG_DICTS = {
         'ui.dialog_settings_main_11': '确认',
         'ui.dialog_settings_main_12': '取消',
         'ui.dialog_settings_main_13': '配置保存成功',
-        'ui.dialog_settings_main_14': '写入配置文件失败！',
         'ui.dialog_settings_main_15': '修改语言需要重启软件才生效，立即重启吗？',
         'ui.dialog_settings_main_16': '表格颜色开关，关闭可提升运行速度：',
         'ui.dialog_settings_connection_1': '数据库配置',
@@ -294,7 +288,7 @@ LANG_DICTS = {
                 &nbsp;&nbsp;ConfigCenterComparer 构建用到以下工具：
                 </p>
                 <p><b>&nbsp;&nbsp;程序：</b>Python 3.10.4</p>
-                <p><b>&nbsp;&nbsp;界面：</b>PyQT 5.15.8</p>
+                <p><b>&nbsp;&nbsp;界面：</b>PyQT 5.15.10</p>
                 <p><b>&nbsp;&nbsp;图标：</b><a href='https://icons8.com/'>icons8.com</a></p>
                 """,
     },

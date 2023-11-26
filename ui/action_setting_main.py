@@ -72,14 +72,16 @@ class ActionSettingMain(QObject):
             self.dialog_settings_main = DialogSettingsMain(self.lang_manager, self.config_manager)
             self.dialog_settings_main.status_updated.connect(self.forward_status)
             self.dialog_settings_main.exec_()
-            logger.info("Opening the settings dialog")
         except Exception:
             logger.exception(f"An error occurred while opening the settings dialog")
             self.status_updated.emit(self.lang['label_status_error'])
 
     def forward_status(self, message: str) -> None:
         """
-        用于转发设置对话框中的信号。
+        用于转发状态信号。
+
+        :param message: 要转发的消息。
+        :type message: str
 
         :rtype: None
         :return: 无返回值。

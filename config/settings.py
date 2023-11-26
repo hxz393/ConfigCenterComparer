@@ -9,7 +9,7 @@ CONFIG_SKIP_PATH = r'config/config_skip.txt'
 LOG_PATH = 'logs/run.log'
 # 程序信息
 PROGRAM_NAME = 'ConfigCenterComparer'
-VERSION_INFO = 'v1.0.2'
+VERSION_INFO = 'v1.1.0'
 AUTHOR_NAME = 'assassing'
 CONTACT_MAIL = 'hxz393@gmail.com'
 WEBSITE_URL = 'https://blog.x2b.net'
@@ -165,3 +165,16 @@ COLOR_DEFAULT = '#ffffff'
 COLOR_EMPTY = '#ffdbcd'
 COLOR_SKIP = '#e0e0e0'
 COLOR_HIGHLIGHT = '#ffff66'
+# 日志弹窗配置
+LOG_DEFAULT_LEVEL = '--ALL--'
+LOG_COLORS = {
+    "DEBUG": "gray",
+    "INFO": "black",
+    "WARNING": "orange",
+    "ERROR": "red",
+    "CRITICAL": "darkred"
+}
+# 日志展示最多行数
+LOG_LINES = 1000
+# 日志定时刷新毫秒数
+LOG_UPDATE_RATE = 200

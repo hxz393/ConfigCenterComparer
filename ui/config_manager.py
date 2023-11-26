@@ -14,8 +14,10 @@ from typing import Dict, Optional, Union, List
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from config.settings import CONFIG_SKIP_PATH
+from config.settings import CONFIG_SKIP_PATH, CONFIG_MAIN_PATH, CONFIG_APOLLO_PATH, CONFIG_NACOS_PATH
 from lib.read_file_to_list import read_file_to_list
+from lib.write_dict_to_json import write_dict_to_json
+from lib.write_list_to_file import write_list_to_file
 from module.read_config_all import read_config_all
 
 logger = logging.getLogger(__name__)
@@ -92,6 +94,7 @@ class ConfigManager(QObject):
         try:
             self._config_main = new_config
             self.config_main_updated.emit()
+            write_dict_to_json(CONFIG_MAIN_PATH, new_config)
             logger.info(f"Config updated: config_main")
         except Exception:
             logger.exception("Failed to update config: config_main")
@@ -106,8 +109,10 @@ class ConfigManager(QObject):
         try:
             if self._config_main['config_center'] == 'Apollo':
                 self._config_apollo = new_config
+                write_dict_to_json(CONFIG_APOLLO_PATH, new_config)
             else:
                 self._config_nacos = new_config
+                write_dict_to_json(CONFIG_NACOS_PATH, new_config)
             self.config_connection_updated.emit()
             logger.info(f"Config updated: config_connection")
         except Exception:
@@ -122,7 +127,9 @@ class ConfigManager(QObject):
         """
         try:
             self._skip_list = new_config
+            # 写入到配置文件
             self.skip_list_updated.emit()
+            write_list_to_file(CONFIG_SKIP_PATH, new_config)
             logger.info(f"Config updated: skip_list")
         except Exception:
             logger.exception("Failed to update config: skip_list")

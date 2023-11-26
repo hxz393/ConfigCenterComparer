@@ -9,7 +9,6 @@
 """
 
 import logging
-import os
 from typing import List, Tuple
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -17,12 +16,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDialog, QLineEdit, QDialogButtonBox, QHBoxLayout, QVBoxLayout, QGroupBox, QLabel, QComboBox
 
 from config.lang_dict_all import LANG_DICTS
-from config.settings import CONFIG_MAIN_PATH, CONFIG_CENTER_LIST, APOLLO_NAME_LIST, COLOR_SET_LIST
+from config.settings import CONFIG_CENTER_LIST, APOLLO_NAME_LIST, COLOR_SET_LIST
 from lib.get_resource_path import get_resource_path
-from lib.write_dict_to_json import write_dict_to_json
 from ui.config_manager import ConfigManager
 from ui.lang_manager import LangManager
-from ui.message_show import message_show
 
 logger = logging.getLogger(__name__)
 
@@ -221,22 +218,16 @@ class DialogSettingsMain(QDialog):
         :rtype: None
         """
         try:
-            # 获取原始语言设置
-            self.original_language_setting = self.config_main.get('lang', 'English')
+            # 对比语言值，有修改则在LangManager类中修改
+            self._check_language_change()
             # 读取用户输入的新配置
             self._update_config()
-            # 写入配置到文件
-            if self._write_config_to_file():
-                # 对比语言值，有修改则在LangManager类中修改
-                self._check_language_change()
-                # 更新ConfigManager类实例中的配置
-                self.config_manager.update_config_main(self.config_main)
-                # 发送更新成功信号
-                self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
-                logger.info("Settings saved")
-                super().accept()
-            else:
-                message_show('Critical', self.lang['ui.dialog_settings_main_14'])
+            # 更新ConfigManager类实例中的配置
+            self.config_manager.update_config_main(self.config_main)
+            # 发送更新成功状态信号
+            self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
+            super().accept()
+            logger.info("Settings saved")
         except Exception:
             logger.exception("Error while updating settings")
             self.status_updated.emit(self.lang['label_status_error'])
@@ -285,22 +276,6 @@ class DialogSettingsMain(QDialog):
             after_list = after_list[:min_length]
         return before_list, after_list
 
-    def _write_config_to_file(self) -> bool:
-        """
-        将配置信息写入文件。
-
-        将内存中更新后的配置信息保存到配置文件中。
-
-        :return: 如果写入成功则返回 True，否则返回 False。
-        :rtype: bool
-        """
-        try:
-            write_dict_to_json(os.path.normpath(CONFIG_MAIN_PATH), self.config_main)
-            return True
-        except Exception:
-            logger.exception("Error while writing configuration to file")
-            return False
-
     def _check_language_change(self) -> None:
         """
         检查语言设置是否更改。
@@ -316,5 +291,5 @@ class DialogSettingsMain(QDialog):
         :rtype: None
         :return: 无返回值。
         """
-        if self.language_combo_box.currentText() != self.original_language_setting:
+        if self.language_combo_box.currentText() != self.config_main.get('lang', 'English'):
             self.lang_manager.update_lang(self.language_combo_box.currentText())

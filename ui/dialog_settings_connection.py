@@ -9,7 +9,6 @@
 """
 
 import logging
-import os
 from typing import Union
 
 from PyQt5.QtCore import Qt, QRegExp, QObject, pyqtSignal
@@ -17,11 +16,8 @@ from PyQt5.QtGui import QIcon, QRegExpValidator
 from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QTabWidget, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QGroupBox, QLabel, QCheckBox
 
 from lib.get_resource_path import get_resource_path
-from lib.write_dict_to_json import write_dict_to_json
-from module.config_path_get import config_path_get
 from ui.config_manager import ConfigManager
 from ui.lang_manager import LangManager
-from ui.message_show import message_show
 
 logger = logging.getLogger(__name__)
 
@@ -340,15 +336,11 @@ class DialogSettingsConnection(QDialog):
         try:
             # 从输入框更新 config_connection
             self._update_config()
-            # 将更新后的配置写入文件
-            if write_dict_to_json(os.path.normpath(config_path_get(self.config_main)), self.config_connection):
-                # 更新ConfigManager类实例中的配置
-                self.config_manager.update_config_connection(self.config_connection)
-                self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
-                super().accept()
-                logger.info("Settings saved")
-            else:
-                message_show('Critical', self.lang['ui.dialog_settings_main_14'])
+            # 更新ConfigManager类实例中的配置
+            self.config_manager.update_config_connection(self.config_connection)
+            self.status_updated.emit(self.lang['ui.dialog_settings_main_13'])
+            super().accept()
+            logger.info("Settings saved")
         except Exception:
             logger.exception("Error encountered while saving configuration.")
             self.status_updated.emit(self.lang['label_status_error'])

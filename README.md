@@ -12,7 +12,7 @@
 - **日志记录和错误处理**：配备先进的日志系统和错误处理机制。
 - **实用功能**：包含搜索、复制、导出等多种功能，并设有忽略列表。
 
-软件截图：
+程序截图：
 
 ![main screen](https://raw.githubusercontent.com/hxz393/ConfigCenterComparer/main/doc/main_screen.jpg)
 
