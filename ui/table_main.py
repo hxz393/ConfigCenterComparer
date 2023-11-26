@@ -434,3 +434,14 @@ class TableMain(QTableWidget):
         :return: 无返回值。
         """
         self.filter_updated.emit(rows)
+
+    def get_table_data(self) -> Dict[int, Dict[str, str]]:
+        """
+        用于获取表格所有数据。
+
+        :rtype: Dict[int, Dict[str, str]]
+        :return: 返回嵌套字典。键为行号，值为字典，字典中键为列标题，值为内容。类似于：{882: {'服务': 'web', '分组': 'application'}, 883: {'服务': 'web', '分组': 'application'}}
+        """
+        return {row: {self.horizontalHeaderItem(col).text(): self.item(row, col).data(Qt.UserRole)
+                      for col in range(self.columnCount())}
+                for row in range(self.rowCount())}

@@ -6,6 +6,8 @@ from .action_about import ActionAbout
 from .action_copy import ActionCopy
 from .action_skip import ActionSkip
 from .action_exit import ActionExit
+from .action_debug import ActionDebug
+from .action_compare import ActionCompare
 from .action_logs import ActionLogs
 from .action_save import ActionSave
 from .action_setting_connection import ActionSettingConnection
@@ -19,6 +21,7 @@ from .message_show import message_show
 from .table_main import TableMain
 from .dialog_settings_main import DialogSettingsMain
 from .dialog_settings_connection import DialogSettingsConnection
+from .dialog_comparison import DialogComparison
 from .status_bar import StatusBar
 from .lang_manager import LangManager
 from .config_manager import ConfigManager

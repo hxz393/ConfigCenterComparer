@@ -11,7 +11,7 @@
 """
 
 import logging
-from typing import Any, Optional, Dict, Tuple
+from typing import Any, Optional, Dict
 
 import pymysql
 

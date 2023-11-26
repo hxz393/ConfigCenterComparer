@@ -9,3 +9,4 @@ __pycache__
 /config/config_main.json
 /config/config_nacos.json
 /ConfigCenterComparer.spec
+/venv*

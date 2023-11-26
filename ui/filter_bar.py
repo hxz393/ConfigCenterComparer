@@ -192,7 +192,7 @@ class FilterBar(QWidget):
         # 搜索输入框
         self.filter_value_box = QLineEdit()
         self.filter_value_box.returnPressed.connect(self.filter_table)
-        # 设置下拉框的尺寸策略和最小宽度
+        # 设置搜索输入框的尺寸策略和最小宽度
         self.filter_value_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.filter_value_box.setMinimumWidth(100)
         self.layout.addWidget(self.filter_value_box)
@@ -489,7 +489,7 @@ class FilterBar(QWidget):
 
     def _apply_style_to_row(self,
                             row: int,
-                            column_colors: list[Dict[int, QColor]]):
+                            column_colors: List[Dict[int, QColor]]):
         """
         应用样式到每一行。
 

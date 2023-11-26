@@ -116,6 +116,10 @@ class ConfigCenterComparer(QMainWindow):
         self.actionUnskip.color_updated.connect(self.table.apply_color_to_table)
         self.actionStart = ActionStart(self.lang_manager, self.config_manager, self.table, self.filter_bar)
         self.actionStart.status_updated.connect(self.status_bar.show_message)
+        self.actionDebug = ActionDebug(self.lang_manager, self.config_manager, self.table, self.filter_bar)
+        self.actionDebug.status_updated.connect(self.status_bar.show_message)
+        self.actionCompare = ActionCompare(self.lang_manager, self.config_manager, self.table)
+        self.actionCompare.status_updated.connect(self.status_bar.show_message)
 
     def _create_menubar(self) -> None:
         """
@@ -129,6 +133,7 @@ class ConfigCenterComparer(QMainWindow):
         self.menu_run = menubar.addMenu("")
         self.menu_run.addAction(self.actionStart.action_start)
         self.menu_run.addAction(self.actionTest.action_test)
+        self.menu_run.addAction(self.actionCompare.action_compare)
         self.menu_run.addSeparator()
         self.menu_run.addAction(self.actionExit.action_exit)
         self.menu_edit = menubar.addMenu("")
@@ -143,6 +148,7 @@ class ConfigCenterComparer(QMainWindow):
         self.menu_option.addAction(self.actionSettingConnection.action_setting)
         self.menu_help = menubar.addMenu("")
         self.menu_help.addAction(self.actionLogs.action_logs)
+        self.menu_help.addAction(self.actionDebug.action_debug)
         self.menu_help.addSeparator()
         self.menu_help.addAction(self.actionUpdate.action_update)
         self.menu_help.addAction(self.actionAbout.action_about)

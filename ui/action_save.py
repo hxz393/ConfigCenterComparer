@@ -54,7 +54,7 @@ class ActionSave(QObject):
         :rtype: None
         :return: 无返回值。
         """
-        self.action_save = QAction(QIcon(get_resource_path('media/icons8-save-26.png')), 'Save1')
+        self.action_save = QAction(QIcon(get_resource_path('media/icons8-save-26.png')), 'Save')
         self.action_save.setShortcut('Ctrl+S')
         self.action_save.triggered.connect(self.save_file)
         self.update_lang()
