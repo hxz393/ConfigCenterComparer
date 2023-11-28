@@ -11,10 +11,10 @@
 import logging
 
 from PyQt5.QtCore import Qt, pyqtSignal, QObject
-from PyQt5.QtGui import QIcon, QBrush, QColor
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QTableWidget
 
-from config.settings import COL_INFO, COLOR_DEFAULT
+from config.settings import COL_INFO
 from lib.get_resource_path import get_resource_path
 from ui.config_manager import ConfigManager
 from ui.lang_manager import LangManager

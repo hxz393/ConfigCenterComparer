@@ -180,6 +180,8 @@ class ActionStart(QObject):
         :rtype: None
         :return: 无返回值。
         """
+        # 先应用颜色
+        self.table.apply_color_to_table()
         # 启动排序
         self.table.setSortingEnabled(True)
         # 默认按第一列升序排序
@@ -188,9 +190,6 @@ class ActionStart(QObject):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         # 更新过滤器，过滤服务中插入值
         self.filter_bar.filter_options_add()
-        # 初始化表格颜色
-        if self.config_manager.get_config_main().get('color_set', 'ON') == 'ON':
-            self.table.apply_color_to_table()
         # 启用表格更新
         self.table.setUpdatesEnabled(True)
         # 启用过滤栏组件
@@ -200,8 +199,6 @@ class ActionStart(QObject):
         self.filter_bar.filter_value_box.setEnabled(True)
         self.filter_bar.filter_value_button.setEnabled(True)
         self.filter_bar.filter_reset_button.setEnabled(True)
-        # 最后调用过滤器
-        self.filter_bar.filter_table()
 
     def show_result_message(self, result: str) -> None:
         """
