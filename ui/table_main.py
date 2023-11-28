@@ -10,13 +10,13 @@ TableMain 类主要用于显示和管理表格数据，提供了多种扩展功�
 """
 
 import logging
-from typing import List, Union, Optional, Dict
+from typing import List, Optional, Dict
 
 from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtGui import QBrush, QColor, QKeyEvent
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QMenu, QAction, QHeaderView
 
-from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_EMPTY
+from config.settings import COL_INFO, COLOR_SKIP, COLOR_CONSISTENCY_FULLY, COLOR_CONSISTENCY_PARTIALLY, COLOR_EMPTY, COLOR_DEFAULT
 from lib.log_time import log_time
 from ui.action_copy import ActionCopy
 from ui.action_save import ActionSave
@@ -64,10 +64,8 @@ class TableMain(QTableWidget):
         self.actionSave.status_updated.connect(self.forward_status)
         self.actionSkip.status_updated.connect(self.forward_status)
         self.actionSkip.filter_updated.connect(self.forward_filter)
-        self.actionSkip.color_updated.connect(self.apply_color_to_table)
         self.actionUnskip.status_updated.connect(self.forward_status)
         self.actionUnskip.filter_updated.connect(self.forward_filter)
-        self.actionUnskip.color_updated.connect(self.apply_color_to_table)
         self.initUI()
 
     def initUI(self) -> None:
@@ -315,28 +313,30 @@ class TableMain(QTableWidget):
             self.setItem(row_position, column, item)
 
     @log_time
-    def apply_color_to_table(self,
-                             rows: Optional[List[int]],
-                             config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]]) -> None:
+    def apply_color_to_table(self, rows: List[int] = None) -> None:
         """
         根据一致性和跳过状态给表格行应用颜色。
 
-        :param config_connection: 数据库连接配置字典。
-        :type config_connection: Dict[str, Dict[str, Union[Dict[str, str], bool]]]
-        :param rows: 要应用颜色的行号列表。
-        :type rows: Optional[List[int]]
+        :param rows: 可选，要应用颜色的行号列表，如果未指定，则对整个列表应用颜色。
+        :type rows: List[int], optional
 
         :rtype: None
         :return: 无返回值。
         """
-        environments = ['PRO', 'PRE', 'TEST', 'DEV']
         try:
-            check_none_value_column_status = {
-                COL_INFO[f'{env.lower()}_value']['col']: config_connection[f'{env}_CONFIG']['mysql_on']
-                for env in environments
-            }
-            check_none_value_column_list = [column for column, status in check_none_value_column_status.items() if status]
+            # 如果关闭颜色设置，直接返回。
+            color_switch = self.config_manager.get_config_main().get('color_set', 'ON')
+            if color_switch == 'OFF':
+                return
+
+            self.setUpdatesEnabled(False)
+            # 遍历表格
             for row in rows if rows and isinstance(rows, list) else range(self.rowCount()):
+                # 不给隐藏行设置颜色
+                if self.isRowHidden(row):
+                    continue
+
+                # 获取关键字段数据
                 consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
                 skip_data = self.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
 
@@ -350,15 +350,21 @@ class TableMain(QTableWidget):
                     self.apply_color(row, COLOR_CONSISTENCY_FULLY)
                 elif consistency_data == 'partially':
                     self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
+                else:
+                    self.apply_color(row, COLOR_DEFAULT)
 
-                # 遍历指定列检查空值
-                # for column in range(self.columnCount()):
-                for column in check_none_value_column_list:
+                # 遍历指定列检查空值，并赋予颜色
+                for column in range(self.columnCount()):
+                    # 不给隐藏列设置颜色
+                    if self.isColumnHidden(column):
+                        continue
                     if self.item(row, column).text() == 'None':
                         self.apply_color(row, COLOR_EMPTY, column)
         except Exception:
             logger.exception("Exception in apply_color_to_table method")
             self.status_updated.emit(self.lang['label_status_error'])
+        finally:
+            self.setUpdatesEnabled(True)
 
     def apply_color(self,
                     row: int,
@@ -379,10 +385,13 @@ class TableMain(QTableWidget):
         """
         try:
             color_brush = QBrush(QColor(color))
-            if column:
+            if column is not None:
                 self.item(row, column).setBackground(color_brush)
             else:
                 for col in range(self.columnCount()):
+                    # 不给隐藏列设置颜色
+                    if self.isColumnHidden(col):
+                        continue
                     self.item(row, col).setBackground(color_brush)
         except Exception:
             logger.exception("Error occurred while applying color to a cell")
