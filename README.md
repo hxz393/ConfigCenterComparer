@@ -54,6 +54,7 @@ Nacos 支持 `yaml` 格式的配置。不支持其他格式。
 
 - **方式一**：前往 [release](https://github.com/hxz393/ConfigCenterComparer/releases) 页面下载 `ConfigCenterComparer.exe`。
 - **方式二**：通过 [百度网盘](https://pan.baidu.com/s/1RK7uBqaqgqJHLJbadXI48g?pwd=6666) 下载 `ConfigCenterComparer.7z` 压缩包，解压后运行。
+- **方式三**：直连 [下载](https://www.x2b.net/download/ConfigCenterComparer.7z)
 
 下载的压缩包，需要解压缩后再运行，否则程序配置将无处保存。
 
