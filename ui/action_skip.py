@@ -36,7 +36,7 @@ class ActionSkip(QObject):
     """
     status_updated = pyqtSignal(str)
     filter_updated = pyqtSignal(list)
-    color_updated = pyqtSignal(list, dict)
+    color_updated = pyqtSignal(list)
 
     def __init__(self,
                  lang_manager: LangManager,
@@ -82,7 +82,7 @@ class ActionSkip(QObject):
         :return: 无返回值。
         """
         try:
-            updated_skip_list = self.update_skip_list_and_apply_color()
+            updated_skip_list = self.update_skip_list()
             # 更新配置管理器中的配置
             self.config_manager.update_skip_list(updated_skip_list)
             # 重新应用过略器
@@ -94,26 +94,22 @@ class ActionSkip(QObject):
             logger.exception("Error occurred while skipping items")
             self.status_updated.emit(self.lang['label_status_error'])
 
-    def update_skip_list_and_apply_color(self) -> List[str]:
+    def update_skip_list(self) -> List[str]:
         """
         更新忽略列表并应用颜色。
 
-        此方法遍历选中的项目，将它们添加到忽略列表，并应用配置的颜色设置。
+        此方法遍历选中的项目，将它们添加到忽略列表。
 
         :rtype: List[str]
         :return: 更新后的忽略列表。
         """
         # 获取配置
-        config_main = self.config_manager.get_config_main()
-        config_connection = self.config_manager.get_config_connection()
         skip_list = self.config_manager.get_skip_list()
 
         for item in self.table.selectedItems():
             row = item.row()
             self.update_table_item(row)
             skip_list.append(f"{self.table.item(row, COL_INFO['name']['col']).text()}+{self.table.item(row, COL_INFO['group']['col']).text()}+{self.table.item(row, COL_INFO['key']['col']).text()}")
-            if config_main.get('color_set', 'ON') == 'ON':
-                self.color_updated.emit([row], config_connection)
 
         return list(set(skip_list))
 
