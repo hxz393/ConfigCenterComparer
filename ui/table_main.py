@@ -315,56 +315,65 @@ class TableMain(QTableWidget):
     @log_time
     def apply_color_to_table(self, rows: List[int] = None) -> None:
         """
-        根据一致性和跳过状态给表格行应用颜色。
+        对整个表格进行着色。通常只有初始化时才不带rows参数，以应用到整表。
 
-        :param rows: 可选，要应用颜色的行号列表，如果未指定，则对整个列表应用颜色。
+        :param rows: 可选，要应用颜色的行号列表。
         :type rows: List[int], optional
 
         :rtype: None
         :return: 无返回值。
         """
-        try:
-            # 如果关闭颜色设置，直接返回。
-            color_switch = self.config_manager.get_config_main().get('color_set', 'ON')
-            if color_switch == 'OFF':
-                return
+        color_switch = self.config_manager.get_config_main().get('color_set', 'ON')
+        if color_switch == 'OFF':
+            return
 
-            self.setUpdatesEnabled(False)
-            # 遍历表格
-            for row in rows if rows and isinstance(rows, list) else range(self.rowCount()):
+        if rows is None or not isinstance(rows, list):
+            rows = range(self.rowCount())
+
+        self.setUpdatesEnabled(False)
+        try:
+            for row in rows:
                 # 不给隐藏行设置颜色
                 if self.isRowHidden(row):
                     continue
 
-                # 获取关键字段数据
-                consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
-                skip_data = self.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
-
-                # 忽略状态为是时设置颜色
-                if skip_data == 'yes':
-                    self.apply_color(row, COLOR_SKIP)
-                    continue
-
-                # 根据一致性值设置颜色
-                if consistency_data == 'fully':
-                    self.apply_color(row, COLOR_CONSISTENCY_FULLY)
-                elif consistency_data == 'partially':
-                    self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
-                else:
-                    self.apply_color(row, COLOR_DEFAULT)
-
-                # 遍历指定列检查空值，并赋予颜色
-                for column in range(self.columnCount()):
-                    # 不给隐藏列设置颜色
-                    if self.isColumnHidden(column):
-                        continue
-                    if self.item(row, column).text() == 'None':
-                        self.apply_color(row, COLOR_EMPTY, column)
+                self._process_row_for_color(row)
         except Exception:
             logger.exception("Exception in apply_color_to_table method")
             self.status_updated.emit(self.lang['label_status_error'])
         finally:
             self.setUpdatesEnabled(True)
+
+    def _process_row_for_color(self, row: int) -> None:
+        """
+        根据一致性、跳过状态和是否为空值给单行应用颜色。
+
+        :param row: 行号，对每行进行颜色处理。
+        :type row: int
+
+        :rtype: None
+        :return: 无返回值。
+        """
+        consistency_data = self.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
+        skip_data = self.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
+        # 忽略状态为是时设置颜色
+        if skip_data == 'yes':
+            self.apply_color(row, COLOR_SKIP)
+            return
+        # 根据一致性值设置颜色
+        if consistency_data == 'fully':
+            self.apply_color(row, COLOR_CONSISTENCY_FULLY)
+        elif consistency_data == 'partially':
+            self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
+        else:
+            self.apply_color(row, COLOR_DEFAULT)
+        # 遍历指定列检查空值，并赋予颜色
+        for column in range(self.columnCount()):
+            # 不给隐藏列设置颜色
+            if self.isColumnHidden(column):
+                continue
+            if self.item(row, column).text() == 'None':
+                self.apply_color(row, COLOR_EMPTY, column)
 
     def apply_color(self,
                     row: int,

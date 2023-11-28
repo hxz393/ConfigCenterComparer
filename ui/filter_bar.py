@@ -9,16 +9,16 @@
 """
 
 import logging
-from typing import List, Optional, Dict
+from typing import List, Optional, Union
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QColor, QBrush
-from PyQt5.QtWidgets import QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QCheckBox, QFrame, QWidget, QSizePolicy, QTableWidget
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QCheckBox, QFrame, QWidget, QSizePolicy
 
-from config.settings import COL_INFO, COLOR_HIGHLIGHT, COLOR_DEFAULT
+from config.settings import COL_INFO, COLOR_HIGHLIGHT
+from lib.log_time import log_time
 from ui.config_manager import ConfigManager
 from ui.lang_manager import LangManager
-from lib.log_time import log_time
+from ui.table_main import TableMain
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +34,14 @@ class FilterBar(QWidget):
     :param config_manager: 配置管理器，用于获取和更新配置信息。
     :type config_manager: ConfigManager
     :param table: 要应用过滤的表格。
-    :type table: QTableWidget
+    :type table: TableMain
     """
     status_updated = pyqtSignal(str)
 
     def __init__(self,
                  lang_manager: LangManager,
                  config_manager: ConfigManager,
-                 table: QTableWidget):
+                 table: TableMain):
         super().__init__()
         # 实例化组件。
         self.lang_manager = lang_manager
@@ -49,8 +49,7 @@ class FilterBar(QWidget):
         self.lang = self.lang_manager.get_lang()
         self.config_manager = config_manager
         self.table = table
-        # 用于还原样式的字典
-        self.style_rows = {}
+        self.highlight_rows = []
         self.initUI()
 
     def initUI(self) -> None:
@@ -277,8 +276,6 @@ class FilterBar(QWidget):
             self.filter_table_check_box.setChecked(False)
             # 清空搜索框 QLineEdit
             self.filter_value_box.clear()
-            # 重置单元格颜色
-            self._reset_styles()
             # 手动调用过略器
             self.filter_table()
         except Exception:
@@ -307,30 +304,56 @@ class FilterBar(QWidget):
         try:
             # 获取颜色开关
             color_switch = self.config_manager.get_config_main().get('color_set', 'ON')
+            # 检查是否有rows参数
+            valid_rows = rows if isinstance(rows, list) else None
             # 计算可见的行数
             visible_rows = 0
             # 搜索框输入内容
             search_value = self.filter_value_box.text().strip().lower()
             # 在新的搜索开始之前，恢复每个单元格的原始样式。
-            self._reset_styles()
+            if color_switch == 'ON':
+                # 针对忽略操作，改变表格颜色。
+                if valid_rows:
+                    self.table.apply_color_to_table(valid_rows)
+                # 针对高亮操作
+                elif self.highlight_rows:
+                    self.table.apply_color_to_table(list(set(self.highlight_rows)))
+                    self.highlight_rows.clear()
+
             # 如果没有传入行列表，则应用到整个列表
-            for row in rows if rows and isinstance(rows, list) else range(self.table.rowCount()):
+            for row in valid_rows if valid_rows else range(self.table.rowCount()):
                 consistency_data = self.table.item(row, COL_INFO['consistency']['col']).data(Qt.UserRole)
                 skip_data = self.table.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
                 name_data = self.table.item(row, COL_INFO['name']['col']).text()
-                index_key = self._generate_index_key(row)
 
                 # 先匹配快速过滤，匹配过滤条件时为True
                 table_match = self._get_table_match(consistency_data, skip_data)
-                # 满足快速过滤条件才进行服务名过滤，匹配选择所有或者选择服务名时为True
-                app_match = self._get_app_match(name_data) if not table_match else False
-                # 满足服务名过滤条件的行才进行搜索，匹配搜索条件或不输入时为True
-                search_match = self._get_search_match(row, search_value, index_key, color_switch) if app_match else False
+                if table_match:
+                    self.table.setRowHidden(row, True)
+                    continue
+
+                # 匹配选择所有或者选择服务名时为True
+                app_match = self._get_app_match(name_data)
+                if not app_match:
+                    self.table.setRowHidden(row, True)
+                    continue
+
+                # 匹配搜索条件或不输入时为True或结果列表
+                search_match = self._get_search_match(row, search_value)
+                if not search_match:
+                    self.table.setRowHidden(row, True)
+                    continue
 
                 # 仅当条件都匹配时才显示行
-                is_visible = app_match and not table_match and search_match
-                self.table.setRowHidden(row, not is_visible)
-                visible_rows += 1 if is_visible else 0
+                self.table.setRowHidden(row, False)
+                visible_rows += 1
+
+                # 对单元格应用颜色
+                if color_switch == 'ON' and isinstance(search_match, list):
+                    self.highlight_rows.append(row)
+                    for column in search_match:
+                        self.table.apply_color(row, COLOR_HIGHLIGHT, column)
+
             # 更新状态栏信息展示过滤后的行数
             self.status_updated.emit(f"{visible_rows} {self.lang['ui.filter_bar_11']}")
         except Exception:
@@ -388,9 +411,7 @@ class FilterBar(QWidget):
 
     def _get_search_match(self,
                           row: int,
-                          search_value: str,
-                          index_key: str,
-                          color_switch: str) -> bool:
+                          search_value: str) -> Union[bool, List[int]]:
         """
         检查当前行是否与搜索条件匹配。
 
@@ -398,20 +419,16 @@ class FilterBar(QWidget):
         :type row: int
         :param search_value: 需要搜索的值。
         :type search_value: str
-        :param index_key: 行索引值。
-        :type index_key: str
-        :param color_switch: 颜色开关。
-        :type color_switch: str
 
-        :return: 如果当前行包含搜索框中的文本，则返回 True。
-        :rtype: bool
+        :return: 如果搜索值为空，则返回 True。否则返回空列表或匹配列号的列表
+        :rtype: Union[bool, List[int]
         """
         # 如果搜索值为空，则无需进行搜索
         if not search_value:
             return True
         # 禁止更新。主要着色时操作太多。
         self.table.setUpdatesEnabled(False)
-        row_texts = []
+        match_col = []
         # 遍历每列的内容
         for column in range(self.table.columnCount()):
             # 不搜索隐藏的列
@@ -421,91 +438,11 @@ class FilterBar(QWidget):
             # 拼接一行全部数据到临时列表
             item = self.table.item(row, column)
             item_text = item.text().lower() if item else ''
-            row_texts.append(item_text)
 
             # 应用颜色方案，只有有搜索结果的单元格会应用。
-            if search_value in item_text and color_switch == 'ON':
-                # 如果不在还原字典，则新增新索引键和空列表值。行数会随着排序变化，所以才引入index_key索引键作为依据。
-                self.style_rows[index_key] = [] if index_key not in self.style_rows else self.style_rows[index_key]
-                # 在还原字典更新索引键对应的列表值，插入列数作为键，颜色为值。如果没有颜色，设置默认白色。
-                self.style_rows[index_key].append({column: item.background().color() if item.background() != QBrush() else QColor(COLOR_DEFAULT)})
-                # 对单元格应用高亮色。
-                item.setBackground(QBrush(QColor(COLOR_HIGHLIGHT)))
+            if search_value in item_text:
+                match_col.append(column)
+
         # 启用更新
         self.table.setUpdatesEnabled(True)
-        # 把row_texts转为字符串，返回搜索值在其中搜索的结果。
-        return search_value in ' '.join(row_texts)
-
-    def _reset_styles(self) -> None:
-        """
-        重置表格样式到记录的状态。
-
-        此方法遍历表格中的所有行，对于每一行，恢复其单元格的背景颜色到初始状态。这通常在过滤条件发生变化或重置时调用。
-
-        :rtype: None
-        :return: 无返回值。
-        """
-        try:
-            self.table.setUpdatesEnabled(False)
-            # 还原字典为空则跳过
-            if not self.style_rows:
-                return
-            # 遍历每行，但跳过隐藏行，因为隐藏行必然没有被更改颜色。
-            # 反过来遍历还原字典并不可行，因为索引键并不储存在表格中，
-            # 而且索引键和行号并不能形成牢固对应关系（行号可变），
-            # 所以遍历所有行，但只操作匹配的单元格，最大程度减少对单元格的操作。
-            for row in range(self.table.rowCount()):
-                if self.table.isRowHidden(row):
-                    continue
-                # 生成当行索引键，并检测是否在还原字典中。
-                index_key = self._generate_index_key(row)
-                if index_key not in self.style_rows:
-                    continue
-                # 索引键在还原字典中找到时，根据行、列和单元格颜色数据，还原单元格本来颜色。
-                self._apply_style_to_row(row, self.style_rows[index_key])
-            # 完成后，清空还原字典。
-            self.style_rows.clear()
-        except Exception:
-            logger.exception("Error occurred while resetting styles")
-        finally:
-            self.table.setUpdatesEnabled(True)
-
-    def _generate_index_key(self, row: int) -> str:
-        """
-        生成索引键。
-
-        此方法根据给定的行号生成一个唯一的索引键。索引键由行中特定列的值组合而成，用于标识表格中的唯一行。
-
-        :param row: 表格中的行号。
-        :type row: int
-
-        :return: 生成的索引键。
-        :rtype: str
-        """
-        name = self.table.item(row, COL_INFO['name']['col']).text()
-        group = self.table.item(row, COL_INFO['group']['col']).text()
-        key = self.table.item(row, COL_INFO['key']['col']).text()
-        return f"{name}+{group}+{key}"
-
-    def _apply_style_to_row(self,
-                            row: int,
-                            column_colors: List[Dict[int, QColor]]):
-        """
-        应用样式到每一行。
-
-        此方法根据提供的颜色信息为指定行中的单元格设置背景颜色。
-
-        :param row: 表格中的行号。
-        :type row: int
-        :param column_colors: 每一列的颜色信息，格式为列号到颜色的映射。
-        :type column_colors: List[Dict[int, QColor]]
-
-        :rtype: None
-        :return: 无返回值。
-        """
-        for column_color in column_colors:
-            for column, color in column_color.items():
-                # 解析列表获取得到行、列和颜色信息后，应用到单元格背景颜色。
-                self.table.item(row, column).setBackground(color)
-
-
+        return match_col
