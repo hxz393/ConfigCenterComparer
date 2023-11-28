@@ -190,7 +190,7 @@ class ActionStart(QObject):
         self.filter_bar.filter_options_add()
         # 初始化表格颜色
         if self.config_manager.get_config_main().get('color_set', 'ON') == 'ON':
-            self.table.apply_color_to_table(None, self.config_manager.get_config_connection())
+            self.table.apply_color_to_table()
         # 启用表格更新
         self.table.setUpdatesEnabled(True)
         # 启用过滤栏组件
