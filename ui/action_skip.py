@@ -36,7 +36,6 @@ class ActionSkip(QObject):
     """
     status_updated = pyqtSignal(str)
     filter_updated = pyqtSignal(list)
-    color_updated = pyqtSignal(list)
 
     def __init__(self,
                  lang_manager: LangManager,
