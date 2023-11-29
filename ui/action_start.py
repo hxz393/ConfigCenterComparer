@@ -180,8 +180,9 @@ class ActionStart(QObject):
         :rtype: None
         :return: 无返回值。
         """
-        # 先应用颜色
+        # 先应用颜色和过滤器
         self.table.apply_color_to_table()
+        self.filter_bar.filter_table()
         # 启动排序
         self.table.setSortingEnabled(True)
         # 默认按第一列升序排序

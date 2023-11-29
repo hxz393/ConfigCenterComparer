@@ -326,19 +326,19 @@ class FilterBar(QWidget):
                 skip_data = self.table.item(row, COL_INFO['skip']['col']).data(Qt.UserRole)
                 name_data = self.table.item(row, COL_INFO['name']['col']).text()
 
-                # 先匹配快速过滤，匹配过滤条件时为True
+                # 先匹配快速过滤，匹配过滤条件时为True，隐藏匹配的行
                 table_match = self._get_table_match(consistency_data, skip_data)
                 if table_match:
                     self.table.setRowHidden(row, True)
                     continue
 
-                # 匹配选择所有或者选择服务名时为True
+                # 匹配选择所有或者选择服务名时为True，不设隐藏
                 app_match = self._get_app_match(name_data)
                 if not app_match:
                     self.table.setRowHidden(row, True)
                     continue
 
-                # 匹配搜索条件或不输入时为True或结果列表
+                # 匹配搜索条件或不输入时为True或结果列表，不设隐藏
                 search_match = self._get_search_match(row, search_value)
                 if not search_match:
                     self.table.setRowHidden(row, True)
