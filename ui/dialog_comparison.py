@@ -175,11 +175,11 @@ class DialogComparison(QDialog):
         # 确定sender是QTableWidget，且拥有actionCopy和actionSave属性
         if isinstance(sender, QTableWidget):
             if hasattr(sender, 'actionCopy') and hasattr(sender, 'actionSave'):
-                actionCopy = getattr(sender, 'actionCopy')
-                actionSave = getattr(sender, 'actionSave')
+                copy = getattr(sender, 'actionCopy')
+                save = getattr(sender, 'actionSave')
                 menu = QMenu(sender)
-                menu.addAction(actionCopy.action_copy)
-                menu.addAction(actionSave.action_save)
+                menu.addAction(copy.action_copy)
+                menu.addAction(save.action_save)
                 menu.exec_(sender.viewport().mapToGlobal(pos))
 
     def update_lang(self) -> None:

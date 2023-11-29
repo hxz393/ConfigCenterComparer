@@ -65,5 +65,5 @@ def test_connection(config_connection: Dict[str, Dict[str, Union[Dict[str, str],
             logger.debug(f'ENV: {env_name} test finished')
         return test_result
     except Exception:
-        logger.exception(f"Error during connection test")
+        logger.exception("Error during connection test")
         return None

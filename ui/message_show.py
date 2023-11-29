@@ -52,4 +52,4 @@ def message_show(message_type: str,
 
         msg_box.exec_()
     except Exception:
-        logger.exception(f"An error occurred while displaying the message box")
+        logger.exception("An error occurred while displaying the message box")

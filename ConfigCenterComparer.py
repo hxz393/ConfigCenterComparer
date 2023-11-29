@@ -19,7 +19,7 @@ from config.settings import LOG_PATH, PROGRAM_NAME
 from lib.get_resource_path import get_resource_path
 from lib.logging_config import logging_config
 from module.init_config import init_config
-from ui import *
+from ui import LangManager, ConfigManager, StatusBar, TableMain, FilterBar, ActionExit, ActionAbout, ActionLogs, ActionSettingMain, ActionSettingConnection, ActionUpdate, ActionTest, ActionCopy, ActionSave, ActionSkip, ActionUnskip, ActionStart, ActionDebug, ActionCompare, global_signals
 
 logger = logging.getLogger(__name__)
 

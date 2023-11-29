@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt, QRegExp, QObject, pyqtSignal
 from PyQt5.QtGui import QIcon, QRegExpValidator
 from PyQt5.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QTabWidget, QWidget, QHBoxLayout, QFrame, QVBoxLayout, QGroupBox, QLabel, QCheckBox
 
+from config.settings import REGEX_PORT, REGEX_ASCII
 from lib.get_resource_path import get_resource_path
 from ui.config_manager import ConfigManager
 from ui.lang_manager import LangManager
@@ -244,10 +245,10 @@ class DialogSettingsConnection(QDialog):
         # 分隔符
         self._create_separator(ssh_layout)
         # 配置行
-        self._create_line_edit(config_key, 'ssh', 'hostname', '127.0.0.1', "^[ -~]+$", ssh_layout, self.lang['ui.dialog_settings_connection_8'])
-        self._create_line_edit(config_key, 'ssh', 'port', '22', "^[0-9]+$", ssh_layout, self.lang['ui.dialog_settings_connection_9'])
-        self._create_line_edit(config_key, 'ssh', 'username', 'root', "^[ -~]+$", ssh_layout, self.lang['ui.dialog_settings_connection_10'])
-        self._create_line_edit(config_key, 'ssh', 'password', '123456', "^[ -~]+$", ssh_layout, self.lang['ui.dialog_settings_connection_11'])
+        self._create_line_edit(config_key, 'ssh', 'hostname', '127.0.0.1', REGEX_ASCII, ssh_layout, self.lang['ui.dialog_settings_connection_8'])
+        self._create_line_edit(config_key, 'ssh', 'port', '22', REGEX_PORT, ssh_layout, self.lang['ui.dialog_settings_connection_9'])
+        self._create_line_edit(config_key, 'ssh', 'username', 'root', REGEX_ASCII, ssh_layout, self.lang['ui.dialog_settings_connection_10'])
+        self._create_line_edit(config_key, 'ssh', 'password', '123456', REGEX_ASCII, ssh_layout, self.lang['ui.dialog_settings_connection_11'])
 
         # 将设置区域添加到对话框的布局中
         ssh_group_box.setLayout(ssh_layout)
@@ -275,11 +276,11 @@ class DialogSettingsConnection(QDialog):
         # 分隔符
         self._create_separator(mysql_layout)
         # 配置行
-        self._create_line_edit(config_key, 'mysql', 'host', '127.0.0.1', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_8'])
-        self._create_line_edit(config_key, 'mysql', 'port', '3306', "^[0-9]+$", mysql_layout, self.lang['ui.dialog_settings_connection_9'])
-        self._create_line_edit(config_key, 'mysql', 'user', 'root', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_10'])
-        self._create_line_edit(config_key, 'mysql', 'password', '123456', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_11'])
-        self._create_line_edit(config_key, 'mysql', 'db', 'apolloconfigdb', "^[ -~]+$", mysql_layout, self.lang['ui.dialog_settings_connection_12'])
+        self._create_line_edit(config_key, 'mysql', 'host', '127.0.0.1', REGEX_ASCII, mysql_layout, self.lang['ui.dialog_settings_connection_8'])
+        self._create_line_edit(config_key, 'mysql', 'port', '3306', REGEX_PORT, mysql_layout, self.lang['ui.dialog_settings_connection_9'])
+        self._create_line_edit(config_key, 'mysql', 'user', 'root', REGEX_ASCII, mysql_layout, self.lang['ui.dialog_settings_connection_10'])
+        self._create_line_edit(config_key, 'mysql', 'password', '123456', REGEX_ASCII, mysql_layout, self.lang['ui.dialog_settings_connection_11'])
+        self._create_line_edit(config_key, 'mysql', 'db', 'apolloconfigdb', REGEX_ASCII, mysql_layout, self.lang['ui.dialog_settings_connection_12'])
 
         # 将设置区域添加到对话框的布局中
         mysql_group_box.setLayout(mysql_layout)

@@ -82,7 +82,7 @@ class ActionLogs(QObject):
             # 连接全局信号，主窗口关闭时一并关闭。
             global_signals.close_all.connect(self.close_dialog)
         except Exception:
-            logger.exception(f"An error occurred while opening the logs dialog")
+            logger.exception("An error occurred while opening the logs dialog")
             self.status_updated.emit(self.lang['label_status_error'])
 
     def close_dialog(self) -> None:

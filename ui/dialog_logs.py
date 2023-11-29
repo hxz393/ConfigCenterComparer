@@ -152,7 +152,7 @@ class DialogLogs(QDialog):
         try:
             self.text_edit.clear()
             write_list_to_file(LOG_PATH, [])
-            logger.info(f"All logs gone")
+            logger.info("All logs cleared")
         except Exception:
             logger.exception("Error clearing logs")
             self.status_updated.emit(self.lang['label_status_error'])

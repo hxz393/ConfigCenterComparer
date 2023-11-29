@@ -101,6 +101,9 @@ DEFAULT_CONFIG_CONNECTION = {
         }
     },
 }
+# 用户输入检查正则
+REGEX_PORT = r'^\d{1,5}$'
+REGEX_ASCII = r'^[ -~]+$'
 # SQL 查询语句
 SQL_TEST_MYSQL = "SELECT VERSION()"
 SQL_CONFIG_APOLLO_ID = """

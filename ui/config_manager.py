@@ -95,7 +95,7 @@ class ConfigManager(QObject):
             self._config_main = new_config
             self.config_main_updated.emit()
             write_dict_to_json(CONFIG_MAIN_PATH, new_config)
-            logger.info(f"Config updated: config_main")
+            logger.info("Config updated: config_main")
         except Exception:
             logger.exception("Failed to update config: config_main")
 
@@ -114,7 +114,7 @@ class ConfigManager(QObject):
                 self._config_nacos = new_config
                 write_dict_to_json(CONFIG_NACOS_PATH, new_config)
             self.config_connection_updated.emit()
-            logger.info(f"Config updated: config_connection")
+            logger.info("Config updated: config_connection")
         except Exception:
             logger.exception("Failed to update config: config_connection")
 
@@ -130,6 +130,6 @@ class ConfigManager(QObject):
             # 写入到配置文件
             self.skip_list_updated.emit()
             write_list_to_file(CONFIG_SKIP_PATH, new_config)
-            logger.info(f"Config updated: skip_list")
+            logger.info("Config updated: skip_list")
         except Exception:
             logger.exception("Failed to update config: skip_list")

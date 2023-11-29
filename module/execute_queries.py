@@ -66,7 +66,7 @@ def execute_queries(config_connection: Dict[str, Dict[str, Union[Dict[str, str],
         update_skip_status(formatted_results)
         # 查询各配置环境的值，得到一致性信息，更新到结果字典。只对比查询成功的环境
         update_consistency_status(formatted_results, query_statuses)
-        logger.debug(f"Status update finished.")
+        logger.debug("Status update finished.")
 
         return formatted_results, query_statuses
     except Exception:

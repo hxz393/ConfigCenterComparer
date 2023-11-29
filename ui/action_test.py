@@ -168,10 +168,10 @@ class TestRun(QThread):
         :return: 无返回值。
         """
         try:
-            logger.info(f'Testing Run')
+            logger.info('Testing Run')
             test_result = test_connection(self.config_connection)
-            logger.info(f'Test Completed')
+            logger.info('Test Completed')
         except Exception:
-            logger.exception(f'Error during testing')
+            logger.exception('Error during testing')
             test_result = None
         self.signal.emit(test_result)

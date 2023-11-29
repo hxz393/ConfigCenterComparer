@@ -71,8 +71,6 @@ class FilterBar(QWidget):
         self._create_filter_table()
         # 创建搜索过滤值组件
         self._create_filter_value()
-        # # 添加弹簧以推动所有小部件靠左
-        # self.layout.addItem(QSpacerItem(401, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         # 设置布局的内容边距
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
@@ -400,10 +398,10 @@ class FilterBar(QWidget):
             return partially_match if not reverse_checked else not partially_match
         elif selected_table == 'skip':
             return skip_match if not reverse_checked else not skip_match
-        elif selected_table == "fully+partially":
-            return (fully_match or partially_match) if not reverse_checked else not (fully_match or partially_match)
         elif selected_table == "fully+skip":
             return (fully_match or skip_match) if not reverse_checked else not (fully_match or skip_match)
+        elif selected_table == "fully+partially":
+            return (fully_match or partially_match) if not reverse_checked else not (fully_match or partially_match)
         elif selected_table == "fully+partially+skip":
             return (fully_match or partially_match or skip_match) if not reverse_checked else not (fully_match or partially_match or skip_match)
         else:
