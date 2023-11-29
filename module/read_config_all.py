@@ -42,5 +42,5 @@ def read_config_all() -> Optional[Tuple[Dict[str, str], Dict[str, Dict[str, Unio
         return config_main, config_apollo, config_nacos
     except Exception:
         # 记录错误信息并返回默认配置
-        logger.exception(f"An error occurred while reading config")
+        logger.exception("An error occurred while reading config")
         return DEFAULT_CONFIG_MAIN, DEFAULT_CONFIG_CONNECTION, DEFAULT_CONFIG_CONNECTION

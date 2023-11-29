@@ -189,6 +189,8 @@ class ActionStart(QObject):
         self.table.sortByColumn(0, Qt.AscendingOrder)
         # 允许用户调整列宽
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        # 调用过滤器
+        self.filter_bar.filter_table()
         # 更新过滤器，过滤服务中插入值
         self.filter_bar.filter_options_add()
         # 启用表格更新
@@ -216,7 +218,6 @@ class ActionStart(QObject):
         self.action_start.setEnabled(True)
         if result == 'done':
             logger.info('Run Completed')
-            return
         else:
             message = {
                 'no query result': ('Warning', self.lang['ui.action_start_4']),
@@ -304,17 +305,18 @@ class StartWork(QThread):
         :rtype: List[List[List[str]]]
         """
         # 一致性状态用户数据和显示文字映射关系。
+        otherwise_unknown = self.lang['ui.action_start_13']
         consistency_status_mapping = {
             "inconsistent": self.lang['ui.action_start_8'],
             "fully": self.lang['ui.action_start_9'],
             "partially": self.lang['ui.action_start_10'],
-            "unknown": self.lang['ui.action_start_13'],
+            "unknown": otherwise_unknown,
         }
         # 忽略状态用户数据和显示文字映射关系。
         skip_status_mapping = {
             "no": self.lang['ui.action_start_11'],
             "yes": self.lang['ui.action_start_12'],
-            "unknown": self.lang['ui.action_start_13'],
+            "unknown": otherwise_unknown,
         }
         # 基本键列表，用户数据和显示文字一样。
         basic_keys = [
@@ -330,8 +332,8 @@ class StartWork(QThread):
                 [result.get(key, 'None'), result.get(key, 'None')]
                 for key in basic_keys
             ] + [
-                [consistency_status_mapping.get(result['consistency_status'], self.lang['ui.action_start_13']), result['consistency_status']],
-                [skip_status_mapping.get(result['skip_status'], self.lang['ui.action_start_13']), result['skip_status']],
+                [consistency_status_mapping.get(result['consistency_status'], otherwise_unknown), result['consistency_status']],
+                [skip_status_mapping.get(result['skip_status'], otherwise_unknown), result['skip_status']],
             ]
             for result in formatted_results.values()
         ]

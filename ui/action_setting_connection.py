@@ -73,7 +73,7 @@ class ActionSettingConnection(QObject):
             self.dialog_settings_connection.status_updated.connect(self.forward_status)
             self.dialog_settings_connection.exec_()
         except Exception:
-            logger.exception(f"An error occurred while opening the settings dialog")
+            logger.exception("An error occurred while opening the settings dialog")
             self.status_updated.emit(self.lang['label_status_error'])
 
     def forward_status(self, message: str) -> None:

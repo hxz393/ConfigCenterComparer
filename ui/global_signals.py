@@ -18,9 +18,12 @@ class GlobalSignals(QObject):
     GlobalSignals 类使用 PyQt5 的 QObject 和 pyqtSignal 来创建自定义信号。这些信号可以在整个应用程序中使用，以实现组件间的通信。
 
     :example:
-    >>> global_signals = GlobalSignals()
-    >>> global_signals.close_all.connect(some_function)
-    在这个例子中，当 close_dialog 信号被触发时，会调用 some_function 函数。
+    >>> def on_close_all():
+    ...     print("Close ALL Windows")
+    >>> close_signals = GlobalSignals()
+    >>> close_signals.close_all.connect(on_close_all)
+    >>> close_signals.close_all.emit()
+    Close ALL Windows
     """
 
     close_all = pyqtSignal()

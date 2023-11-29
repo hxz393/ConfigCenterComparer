@@ -31,7 +31,7 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[Any]:
     """
     required_keys = ['host', 'port', 'user', 'password', 'db']
     if not all(key in mysql_config and mysql_config[key] for key in required_keys):
-        logger.error(f"MySQL configuration keys are missing or contain empty values")
+        logger.error("MySQL configuration keys are missing or contain empty values")
         return False
 
     try:
@@ -42,5 +42,5 @@ def mysql_query(mysql_config: Dict[str, Any], query_sql: str) -> Optional[Any]:
                 result = cursor.fetchall()
                 return result
     except Exception:
-        logger.exception(f"Unexpected error")
+        logger.exception("Unexpected error")
         return False
