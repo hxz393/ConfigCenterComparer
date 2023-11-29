@@ -19,7 +19,10 @@ from config.settings import LOG_PATH, PROGRAM_NAME
 from lib.get_resource_path import get_resource_path
 from lib.logging_config import logging_config
 from module.init_config import init_config
-from ui import LangManager, ConfigManager, StatusBar, TableMain, FilterBar, ActionExit, ActionAbout, ActionLogs, ActionSettingMain, ActionSettingConnection, ActionUpdate, ActionTest, ActionCopy, ActionSave, ActionSkip, ActionUnskip, ActionStart, ActionDebug, ActionCompare, global_signals
+from ui import (LangManager, ConfigManager, StatusBar, TableMain, FilterBar,
+                ActionExit, ActionAbout, ActionLogs, ActionSettingMain, ActionSettingConnection,
+                ActionUpdate, ActionTest, ActionCopy, ActionSave, ActionSkip, ActionUnskip,
+                ActionStart, ActionDebug, ActionCompare, global_signals)
 
 logger = logging.getLogger(__name__)
 
@@ -191,11 +194,11 @@ class ConfigCenterComparer(QMainWindow):
         self.setWindowIcon(QIcon(get_resource_path('media/main.svg')))
         # 创建垂直布局，加入表格和过滤器
         self.central_widget = QWidget()
+        self.addToolBar(self.toolbar)
         self.main_area = QVBoxLayout()
         self.main_area.addWidget(self.filter_bar)
         self.main_area.addWidget(self.table)
         self.setStatusBar(self.status_bar)
-        self.addToolBar(self.toolbar)
         self.central_widget.setLayout(self.main_area)
 
         # 设置为主窗口的中心部件
