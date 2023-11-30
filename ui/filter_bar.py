@@ -316,8 +316,7 @@ class FilterBar(QWidget):
                     self.table.apply_color_to_table(valid_rows)
                 # 针对高亮操作
                 elif self.highlight_rows:
-                    self.table.apply_color_to_table(list(set(self.highlight_rows)))
-                    self.highlight_rows.clear()
+                    self._reset_styles()
 
             # 如果没有传入行列表，则应用到整个列表
             for row in valid_rows if valid_rows else range(self.table.rowCount()):
@@ -349,7 +348,7 @@ class FilterBar(QWidget):
 
                 # 对单元格应用颜色
                 if color_switch == 'ON' and isinstance(search_match, list):
-                    self.highlight_rows.append(row)
+                    self.highlight_rows.append(self._generate_index_key(row))
                     for column in search_match:
                         self.table.apply_color(row, COLOR_HIGHLIGHT, column)
 
@@ -447,3 +446,53 @@ class FilterBar(QWidget):
         # 启用更新
         self.table.setUpdatesEnabled(True)
         return match_col
+
+    def _generate_index_key(self, row: int) -> str:
+        """
+        生成索引键。
+
+        此方法根据给定的行号生成一个唯一的索引键。索引键由行中特定列的值组合而成，用于标识表格中的唯一行。
+
+        :param row: 表格中的行号。
+        :type row: int
+
+        :return: 生成的索引键。
+        :rtype: str
+        """
+        name = self.table.item(row, COL_INFO['name']['col']).text()
+        group = self.table.item(row, COL_INFO['group']['col']).text()
+        key = self.table.item(row, COL_INFO['key']['col']).text()
+        return f"{name}+{group}+{key}"
+
+    def _reset_styles(self) -> None:
+        """
+        重置表格样式到记录的状态。
+
+        此方法遍历表格中的所有行，对于每一行，恢复其单元格的背景颜色到初始状态。这通常在过滤条件发生变化或重置时调用。
+
+        :rtype: None
+        :return: 无返回值。
+        """
+
+        try:
+            reset_rows = []
+            # 还原字典为空则跳过
+            if not self.highlight_rows:
+                return
+            # 遍历每行，但跳过隐藏行，因为隐藏行必然没有被更改颜色。
+            # 反过来遍历还原字典并不可行，因为索引键并不储存在表格中，
+            # 而且索引键和行号并不能形成牢固对应关系（行号可变），
+            # 所以遍历所有行，但只操作匹配的单元格，最大程度减少对单元格的操作。
+            for row in range(self.table.rowCount()):
+                if self.table.isRowHidden(row):
+                    continue
+                # 生成当行索引键，并检测是否在还原列表中。
+                elif self._generate_index_key(row) in self.highlight_rows:
+                    # 索引键在还原字典中找到时，向reset_rows插入行数
+                    reset_rows.append(row)
+            # 最后一次性还原单元格本来颜色。
+            self.table.apply_color_to_table(reset_rows)
+            # 完成后，清空还原列表。
+            self.highlight_rows.clear()
+        except Exception:
+            logger.exception("Error occurred while resetting styles")
