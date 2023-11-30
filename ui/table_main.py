@@ -330,7 +330,6 @@ class TableMain(QTableWidget):
         if rows is None or not isinstance(rows, list):
             rows = range(self.rowCount())
 
-        self.setUpdatesEnabled(False)
         try:
             for row in rows:
                 # 不给隐藏行设置颜色
@@ -341,8 +340,6 @@ class TableMain(QTableWidget):
         except Exception:
             logger.exception("Exception in apply_color_to_table method")
             self.status_updated.emit(self.lang['label_status_error'])
-        finally:
-            self.setUpdatesEnabled(True)
 
     def _process_row_for_color(self, row: int) -> None:
         """
@@ -360,6 +357,7 @@ class TableMain(QTableWidget):
         if skip_data == 'yes':
             self.apply_color(row, COLOR_SKIP)
             return
+
         # 根据一致性值设置颜色
         if consistency_data == 'fully':
             self.apply_color(row, COLOR_CONSISTENCY_FULLY)
@@ -367,13 +365,13 @@ class TableMain(QTableWidget):
             self.apply_color(row, COLOR_CONSISTENCY_PARTIALLY)
         else:
             self.apply_color(row, COLOR_DEFAULT)
+
         # 遍历指定列检查空值，并赋予颜色
         for column in range(self.columnCount()):
             # 不给隐藏列设置颜色
-            if self.isColumnHidden(column):
-                continue
-            if self.item(row, column).text() == 'None':
-                self.apply_color(row, COLOR_EMPTY, column)
+            if not self.isColumnHidden(column):
+                if self.item(row, column).text() == 'None':
+                    self.apply_color(row, COLOR_EMPTY, column)
 
     def apply_color(self,
                     row: int,
@@ -399,9 +397,8 @@ class TableMain(QTableWidget):
             else:
                 for col in range(self.columnCount()):
                     # 不给隐藏列设置颜色
-                    if self.isColumnHidden(col):
-                        continue
-                    self.item(row, col).setBackground(color_brush)
+                    if not self.isColumnHidden(col):
+                        self.item(row, col).setBackground(color_brush)
         except Exception:
             logger.exception("Error occurred while applying color to a cell")
             self.status_updated.emit(self.lang['label_status_error'])

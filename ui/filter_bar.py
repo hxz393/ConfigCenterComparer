@@ -300,6 +300,7 @@ class FilterBar(QWidget):
         :return: 无返回值。
         """
         try:
+            self.table.setUpdatesEnabled(False)
             # 获取颜色开关
             color_switch = self.config_manager.get_config_main().get('color_set', 'ON')
             # 检查是否有rows参数
@@ -357,6 +358,8 @@ class FilterBar(QWidget):
         except Exception:
             logger.exception("Exception in filtering table")
             self.status_updated.emit(self.lang['label_status_error'])
+        finally:
+            self.table.setUpdatesEnabled(True)
 
     def _get_app_match(self, name_data: str) -> bool:
         """
@@ -433,11 +436,11 @@ class FilterBar(QWidget):
             if self.table.isColumnHidden(column):
                 continue
 
-            # 拼接一行全部数据到临时列表
+            # 获取单元格内容
             item = self.table.item(row, column)
             item_text = item.text().lower() if item else ''
 
-            # 应用颜色方案，只有有搜索结果的单元格会应用。
+            # 单元格列号插入到返回列表
             if search_value in item_text:
                 match_col.append(column)
 
