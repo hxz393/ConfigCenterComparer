@@ -189,10 +189,11 @@ class ActionStart(QObject):
         self.table.sortByColumn(0, Qt.AscendingOrder)
         # 允许用户调整列宽
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
-        # 调用过滤器
-        self.filter_bar.filter_table()
         # 更新过滤器，过滤服务中插入值
         self.filter_bar.filter_options_add()
+        # 调用过滤器
+        self.filter_bar.highlight_rows.clear()
+        self.filter_bar.filter_table()
         # 启用表格更新
         self.table.setUpdatesEnabled(True)
         # 启用过滤栏组件
