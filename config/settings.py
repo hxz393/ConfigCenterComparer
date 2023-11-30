@@ -9,7 +9,7 @@ CONFIG_SKIP_PATH = r'config/config_skip.txt'
 LOG_PATH = 'logs/run.log'
 # 程序信息
 PROGRAM_NAME = 'ConfigCenterComparer'
-VERSION_INFO = 'v1.1.0'
+VERSION_INFO = 'v1.1.1'
 AUTHOR_NAME = 'assassing'
 CONTACT_MAIL = 'hxz393@gmail.com'
 WEBSITE_URL = 'https://blog.x2b.net'
